@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from validate import validate_planet_data, validate_dataset_planet_data
+from validate import validate_dataset_planet_data
 from producer import send_to_kafka
 import logging
 import uuid
@@ -51,7 +51,7 @@ def receive_discovery():
         data["timestamp_reception"] = datetime.now().isoformat()
 
         # Validation des données
-        valid, message = validate_planet_data(data)
+        valid, message = validate_dataset_planet_data(data)
         if not valid:
             logger.warning(f"Validation échouée: {message}")
             return jsonify({"error": message}), 400

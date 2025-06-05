@@ -17,7 +17,7 @@ for key, value in first_row.items():
         first_row[key] = str(value)
 
 # Envoyer la requête POST
-url = "http://localhost:5000/discoveries"
+url = "http://localhost:5001/discoveries"
 headers = {"Content-Type": "application/json"}
 response = requests.post(url, data=json.dumps(first_row), headers=headers)
 
