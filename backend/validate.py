@@ -32,7 +32,7 @@ class PlanetDiscovery(BaseModel):
         default=None, description="Timestamp de réception"
     )
 
-    @validator("name")
+    @validator("Name")
     def validate_name(cls, v):
         if not v or len(v.strip()) == 0:
             raise ValueError("Le nom de la planète ne peut pas être vide")
@@ -40,13 +40,13 @@ class PlanetDiscovery(BaseModel):
             raise ValueError("Le nom de la planète ne peut pas dépasser 100 caractères")
         return v.strip()
 
-    @validator("water_presence")
+    @validator("Water_Presence")
     def validate_water_presence(cls, v):
         if v not in [0, 1]:
             raise ValueError("La présence d'eau doit être 0 (non) ou 1 (oui)")
         return v
 
-    @validator("colonisable")
+    @validator("Colonisable")
     def validate_colonisable(cls, v):
         if v not in [0, 1]:
             raise ValueError("Colonisable doit être 0 (non) ou 1 (oui)")
