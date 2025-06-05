@@ -304,8 +304,8 @@ def main():
     spark = create_spark_session()
 
     try:
-        print(f"📡 Connexion à Kafka: {kafka_servers}")
-        print(f"📊 Topic: {topic}")
+        print("📡 Connexion à Kafka: {}".format(kafka_servers))
+        print("📊 Topic: {}".format(topic))
 
         # Pour le mode batch (traitement des données existantes)
         batch_df = (
@@ -318,7 +318,7 @@ def main():
         )
 
         if batch_df.count() > 0:
-            print(f"\n📊 Messages Kafka trouvés: {batch_df.count()}")
+            print("\n📊 Messages Kafka trouvés: {}".format(batch_df.count()))
 
             # Parse des données existantes
             planet_schema = define_planet_schema()
@@ -326,7 +326,7 @@ def main():
                 from_json(col("value").cast("string"), planet_schema).alias("data")
             ).select("data.*")
 
-            print(f"📋 Planètes parsées: {parsed_batch.count()}")
+            print("📋 Planètes parsées: {}".format(parsed_batch.count()))
 
             if parsed_batch.count() > 0:
                 # Analyses sur les données existantes
@@ -339,9 +339,9 @@ def main():
                 try:
                     output_path = "/tmp/planet_analysis_results"
                     parsed_batch.write.mode("overwrite").json(output_path)
-                    print(f"\n💾 Résultats sauvegardés: {output_path}")
+                    print("\n💾 Résultats sauvegardés: {}".format(output_path))
                 except Exception as e:
-                    print(f"⚠️ Impossible de sauvegarder: {e}")
+                    print("⚠️ Impossible de sauvegarder: {}".format(e))
 
         else:
             print("\n⚠️ Aucune donnée trouvée dans Kafka")
@@ -352,7 +352,7 @@ def main():
         print("\n✅ ANALYSE TERMINÉE")
 
     except Exception as e:
-        print(f"❌ Erreur: {e}")
+        print("❌ Erreur: {}".format(e))
         import traceback
 
         traceback.print_exc()
