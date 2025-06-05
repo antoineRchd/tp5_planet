@@ -10,25 +10,24 @@ class PlanetDiscovery(BaseModel):
     Basé sur la structure du fichier CSV planets_dataset.csv
     """
 
-    name: str = Field(..., description="Nom de la planète")
-    num_moons: int = Field(..., ge=0, description="Nombre de satellites naturels")
-    minerals: int = Field(..., ge=0, description="Quantité de minéraux")
-    gravity: float = Field(
+    Name: str = Field(..., description="Nom de la planète")
+    Num_Moons: int = Field(..., ge=0, description="Nombre de satellites naturels")
+    Minerals: int = Field(..., ge=0, description="Quantité de minéraux")
+    Gravity: float = Field(
         ..., gt=0, description="Gravité (multiple de la gravité terrestre)"
     )
-    sunlight_hours: float = Field(
+    Sunlight_Hours: float = Field(
         ..., ge=0, le=24, description="Heures d'exposition au soleil par jour"
     )
-    temperature: float = Field(..., description="Température moyenne (en Celsius)")
-    rotation_time: float = Field(..., gt=0, description="Temps de rotation (en heures)")
-    water_presence: int = Field(
+    Temperature: float = Field(..., description="Température moyenne (en Celsius)")
+    Rotation_Time: float = Field(..., gt=0, description="Temps de rotation (en heures)")
+    Water_Presence: int = Field(
         ..., ge=0, le=1, description="Présence d'eau (0=non, 1=oui)"
     )
-    colonisable: int = Field(
+    Colonisable: int = Field(
         ..., ge=0, le=1, description="Planète colonisable (0=non, 1=oui)"
     )
 
-    # Champs automatiques
     timestamp_reception: Optional[str] = Field(
         default=None, description="Timestamp de réception"
     )

@@ -35,48 +35,26 @@ def test_planet_discovery_api():
     # Quelques planètes d'exemple
     example_planets = [
         {
-            "name": "Kepler-442b",
-            "num_moons": 2,
-            "minerals": 750,
-            "gravity": 1.2,
-            "sunlight_hours": 12.5,
-            "temperature": 15.0,
-            "rotation_time": 24.8,
-            "water_presence": 1,
-            "colonisable": 1,
+            "Name": "Kepler-442b",
+            "Num_Moons": 2,
+            "Minerals": 750,
+            "Gravity": 1.2,
+            "Sunlight_Hours": 12.5,
+            "Temperature": 15.0,
+            "Rotation_Time": 24.8,
+            "Water_Presence": 1,
+            "Colonisable": 1,
         },
         {
             "name": "TOI-715b",
             "num_moons": 0,
             "minerals": 320,
             "gravity": 0.8,
-            "sunlight_hours": 8.2,
-            "temperature": -12.0,
-            "rotation_time": 18.6,
-            "water_presence": 0,
-            "colonisable": 0,
-        },
-        {
-            "name": "HD 40307g",
-            "num_moons": 3,
-            "minerals": 890,
-            "gravity": 1.6,
-            "sunlight_hours": 14.2,
-            "temperature": 22.5,
-            "rotation_time": 32.1,
-            "water_presence": 1,
-            "colonisable": 1,
-        },
-        {
-            "name": "Gliese 667Cc",
-            "num_moons": 1,
-            "minerals": 456,
-            "gravity": 1.1,
-            "sunlight_hours": 11.8,
-            "temperature": 5.0,
-            "rotation_time": 28.4,
-            "water_presence": 1,
-            "colonisable": 0,
+            "Sunlight_Hours": 8.2,
+            "Temperature": -12.0,
+            "Rotation_Time": 18.6,
+            "Water_Presence": 0,
+            "Colonisable": 0,
         },
     ]
 
@@ -157,15 +135,15 @@ def generate_random_planet():
     ]
 
     return {
-        "name": f"{random.choice(planet_names)}-{random.randint(1000, 9999)}",
-        "num_moons": random.randint(0, 10),
-        "minerals": random.randint(50, 1000),
-        "gravity": round(random.uniform(0.1, 3.0), 2),
-        "sunlight_hours": round(random.uniform(0, 24), 1),
-        "temperature": round(random.uniform(-100, 100), 1),
-        "rotation_time": round(random.uniform(10, 100), 1),
-        "water_presence": random.choice([0, 1]),
-        "colonisable": random.choice([0, 1]),
+        "Name": f"{random.choice(planet_names)}-{random.randint(1000, 9999)}",
+        "Num_Moons": random.randint(0, 10),
+        "Minerals": random.randint(50, 1000),
+        "Gravity": round(random.uniform(0.1, 3.0), 2),
+        "Sunlight_Hours": round(random.uniform(0, 24), 1),
+        "Temperature": round(random.uniform(-100, 100), 1),
+        "Rotation_Time": round(random.uniform(10, 100), 1),
+        "Water_Presence": random.choice([0, 1]),
+        "Colonisable": random.choice([0, 1]),
     }
 
 
@@ -195,7 +173,7 @@ def stress_test():
 
             if response.status_code == 201:
                 success_count += 1
-                print(f"✅ {i+1}/{num_planets}: {planet['name']}")
+                print(f"✅ {i+1}/{num_planets}: {planet['Name']}")
             else:
                 error_count += 1
                 print(f"❌ {i+1}/{num_planets}: Erreur {response.status_code}")
