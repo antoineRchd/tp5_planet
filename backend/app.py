@@ -49,33 +49,35 @@ def create_discovery():
 
         # Préparation du message pour Kafka
         kafka_message = {
-            "name": planet.name,
-            "num_moons": planet.num_moons,
-            "minerals": planet.minerals,
-            "gravity": planet.gravity,
-            "sunlight_hours": planet.sunlight_hours,
-            "temperature": planet.temperature,
-            "rotation_time": planet.rotation_time,
-            "water_presence": planet.water_presence,
-            "colonisable": planet.colonisable,
+            "Name": planet.Name,
+            "Num_Moons": planet.Num_Moons,
+            "Minerals": planet.Minerals,
+            "Gravity": planet.Gravity,
+            "Sunlight_Hours": planet.Sunlight_Hours,
+            "Temperature": planet.Temperature,
+            "Rotation_Time": planet.Rotation_Time,
+            "Water_Presence": planet.Water_Presence,
+            "Colonisable": planet.Colonisable,
             "timestamp_reception": planet.timestamp_reception,
         }
 
+
+
         # Envoi vers Kafka
-        kafka_broker = os.getenv("KAFKA_BROKER", "localhost:29092")
+        kafka_broker = os.getenv("KAFKA_BROKER", "localhost:9092")
         topic = "planet_discoveries"
 
         success = send_to_kafka(topic, kafka_message)
 
         if success:
-            logger.info(f"Découverte envoyée vers Kafka: {planet.name}")
+            logger.info(f"Découverte envoyée vers Kafka: {planet.Name}")
             response = PlanetDiscoveryResponse(
-                message=f"Découverte de la planète '{planet.name}' enregistrée avec succès",
+                message=f"Découverte de la planète '{planet.Name}' enregistrée avec succès",
                 planet_data=planet,
             )
             return jsonify(response.dict()), 201
         else:
-            logger.error(f"Échec de l'envoi vers Kafka pour: {planet.name}")
+            logger.error(f"Échec de l'envoi vers Kafka pour: {planet.Name}")
             return (
                 jsonify(
                     {
@@ -107,7 +109,7 @@ def load_dataset():
             return jsonify({"error": "Fichier dataset non trouvé"}), 404
 
         # Traitement des données du dataset avec le module csv
-        kafka_broker = os.getenv("KAFKA_BROKER", "localhost:29092")
+        kafka_broker = os.getenv("KAFKA_BROKER", "localhost:9092")
         topic = "dataset_planets"
 
         success_count = 0
@@ -122,30 +124,30 @@ def load_dataset():
                 try:
                     # Validation des données
                     planet_data = {
-                        "name": str(row["Name"]),
-                        "num_moons": int(row["Num_Moons"]),
-                        "minerals": int(row["Minerals"]),
-                        "gravity": float(row["Gravity"]),
-                        "sunlight_hours": float(row["Sunlight_Hours"]),
-                        "temperature": float(row["Temperature"]),
-                        "rotation_time": float(row["Rotation_Time"]),
-                        "water_presence": int(row["Water_Presence"]),
-                        "colonisable": int(row["Colonisable"]),
+                        "Name": str(row["Name"]),
+                        "Num_Moons": int(row["Num_Moons"]),
+                        "Minerals": int(row["Minerals"]),
+                        "Gravity": float(row["Gravity"]),
+                        "Sunlight_Hours": float(row["Sunlight_Hours"]),
+                        "Temperature": float(row["Temperature"]),
+                        "Rotation_Time": float(row["Rotation_Time"]),
+                        "Water_Presence": int(row["Water_Presence"]),
+                        "Colonisable": int(row["Colonisable"]),
                     }
 
                     planet = PlanetDiscovery(**planet_data)
 
                     # Préparation du message pour Kafka
                     kafka_message = {
-                        "name": planet.name,
-                        "num_moons": planet.num_moons,
-                        "minerals": planet.minerals,
-                        "gravity": planet.gravity,
-                        "sunlight_hours": planet.sunlight_hours,
-                        "temperature": planet.temperature,
-                        "rotation_time": planet.rotation_time,
-                        "water_presence": planet.water_presence,
-                        "colonisable": planet.colonisable,
+                        "Name": planet.Name,
+                        "Num_Moons": planet.Num_Moons,
+                        "Minerals": planet.Minerals,
+                        "Gravity": planet.Gravity,
+                        "Sunlight_Hours": planet.Sunlight_Hours,
+                        "Temperature": planet.Temperature,
+                        "Rotation_Time": planet.Rotation_Time,
+                        "Water_Presence": planet.Water_Presence,
+                        "Colonisable": planet.Colonisable,
                         "timestamp_reception": planet.timestamp_reception,
                         "source": "dataset",
                     }
@@ -155,7 +157,7 @@ def load_dataset():
                         success_count += 1
                     else:
                         error_count += 1
-                        logger.warning(f"Échec Kafka pour planète: {planet.name}")
+                        logger.warning(f"Échec Kafka pour planète: {planet.Name}")
 
                 except Exception as e:
                     error_count += 1
@@ -191,11 +193,11 @@ def get_stats():
             # Calcul manuel des statistiques sans pandas
             total_planets = 0
             planets_with_water = 0
-            colonisable_planets = 0
-            temperatures = []
+            Colonisable_planets = 0
+            Temperatures = []
             gravities = []
             max_moons = 0
-            total_minerals = 0
+            total_Minerals = 0
 
             with open(csv_file_path, "r") as file:
                 csv_reader = csv.DictReader(file)
@@ -207,30 +209,30 @@ def get_stats():
                         planets_with_water += 1
 
                     if int(row["Colonisable"]) == 1:
-                        colonisable_planets += 1
+                        Colonisable_planets += 1
 
-                    temperatures.append(float(row["Temperature"]))
+                    Temperatures.append(float(row["Temperature"]))
                     gravities.append(float(row["Gravity"]))
 
-                    num_moons = int(row["Num_Moons"])
-                    if num_moons > max_moons:
-                        max_moons = num_moons
+                    Num_Moons = int(row["Num_Moons"])
+                    if Num_Moons > max_moons:
+                        max_moons = Num_Moons
 
-                    total_minerals += int(row["Minerals"])
+                    total_Minerals += int(row["Minerals"])
 
-            avg_temperature = (
-                sum(temperatures) / len(temperatures) if temperatures else 0
+            avg_Temperature = (
+                sum(Temperatures) / len(Temperatures) if Temperatures else 0
             )
-            avg_gravity = sum(gravities) / len(gravities) if gravities else 0
+            avg_Gravity = sum(gravities) / len(gravities) if gravities else 0
 
             stats = {
                 "total_planets": total_planets,
                 "planets_with_water": planets_with_water,
-                "colonisable_planets": colonisable_planets,
-                "average_temperature": round(avg_temperature, 2),
-                "average_gravity": round(avg_gravity, 2),
+                "Colonisable_planets": Colonisable_planets,
+                "average_Temperature": round(avg_Temperature, 2),
+                "average_Gravity": round(avg_Gravity, 2),
                 "max_moons": max_moons,
-                "total_minerals": total_minerals,
+                "total_Minerals": total_Minerals,
             }
             return jsonify(stats), 200
         else:

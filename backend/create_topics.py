@@ -56,7 +56,6 @@ def create_kafka_topics():
             num_partitions=3,
             replication_factor=1,
             topic_configs={
-                "cleanup.policy": "compact,delete",
                 "retention.ms": "604800000",  # 7 jours
                 "compression.type": "gzip",
             },
@@ -66,7 +65,6 @@ def create_kafka_topics():
             num_partitions=2,
             replication_factor=1,
             topic_configs={
-                "cleanup.policy": "compact,delete",
                 "retention.ms": "604800000",  # 7 jours
                 "compression.type": "gzip",
             },
