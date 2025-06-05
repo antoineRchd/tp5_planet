@@ -68,8 +68,15 @@ def send_to_kafka(topic, data, key=None):
         try:
             current_producer = get_producer()
 
-            # Utilisation de l'ID comme clé si disponible
-            message_key = key or data.get("id", None)
+            # Utilisation du nom comme clé si disponible et valide
+            message_key = key
+            if message_key is None and isinstance(data, dict):
+                # Essayer d'utiliser le nom de la planète comme clé
+                message_key = data.get("name", None)
+
+            # S'assurer que la clé est une chaîne ou None
+            if message_key is not None and not isinstance(message_key, str):
+                message_key = str(message_key)
 
             # Envoi du message
             future = current_producer.send(topic=topic, value=data, key=message_key)

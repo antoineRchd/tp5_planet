@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
@@ -25,25 +26,23 @@ def create_spark_session():
 
 def define_planet_schema():
     """
-    Définit le schéma pour les données de découverte de planètes
+    Définit le schéma pour les données de planètes (structure CSV)
     """
     return StructType(
         [
-            StructField("id", StringType(), True),
-            StructField("nom", StringType(), True),
-            StructField("decouvreur", StringType(), True),
-            StructField("date_decouverte", StringType(), True),
-            StructField("masse", DoubleType(), True),
-            StructField("rayon", DoubleType(), True),
-            StructField("distance", DoubleType(), True),
-            StructField("type", StringType(), True),
-            StructField("statut", StringType(), True),
-            StructField("atmosphere", StringType(), True),
-            StructField("temperature_moyenne", DoubleType(), True),
-            StructField("periode_orbitale", DoubleType(), True),
-            StructField("nombre_satellites", IntegerType(), True),
-            StructField("presence_eau", StringType(), True),
+            StructField("name", StringType(), True),
+            StructField("num_moons", IntegerType(), True),
+            StructField("minerals", IntegerType(), True),
+            StructField("gravity", DoubleType(), True),
+            StructField("sunlight_hours", DoubleType(), True),
+            StructField("temperature", DoubleType(), True),
+            StructField("rotation_time", DoubleType(), True),
+            StructField("water_presence", IntegerType(), True),
+            StructField("colonisable", IntegerType(), True),
             StructField("timestamp_reception", StringType(), True),
+            StructField(
+                "source", StringType(), True
+            ),  # pour distinguer dataset vs nouvelles découvertes
         ]
     )
 
@@ -82,72 +81,165 @@ def calculate_basic_stats(df):
     # Agrégations simples
     stats_df = df.agg(
         count("*").alias("total_planetes"),
-        avg("masse").alias("masse_moyenne"),
-        avg("rayon").alias("rayon_moyen"),
-        avg("distance").alias("distance_moyenne"),
-        avg("temperature_moyenne").alias("temperature_moyenne"),
-        min("masse").alias("masse_min"),
-        max("masse").alias("masse_max"),
+        avg("gravity").alias("gravite_moyenne"),
+        avg("temperature").alias("temperature_moyenne"),
+        avg("sunlight_hours").alias("heures_soleil_moyenne"),
+        avg("rotation_time").alias("rotation_moyenne"),
+        avg("num_moons").alias("lunes_moyenne"),
+        sum("minerals").alias("mineraux_total"),
+        min("temperature").alias("temp_min"),
+        max("temperature").alias("temp_max"),
     )
 
     print("Statistiques générales:")
     stats_df.show()
 
-    # Distribution par type
-    print("\nDistribution par type de planète:")
-    type_dist = df.groupBy("type").count().orderBy(desc("count"))
-    type_dist.show()
+    # Distribution par présence d'eau
+    print("\nDistribution par présence d'eau:")
+    water_dist = (
+        df.groupBy("water_presence")
+        .count()
+        .withColumn(
+            "presence_eau", when(col("water_presence") == 1, "Oui").otherwise("Non")
+        )
+        .select("presence_eau", "count")
+        .orderBy(desc("count"))
+    )
+    water_dist.show()
 
-    # Distribution par statut
-    print("\nDistribution par statut:")
-    status_dist = df.groupBy("statut").count().orderBy(desc("count"))
-    status_dist.show()
+    # Distribution par colonisabilité
+    print("\nDistribution par colonisabilité:")
+    colonisable_dist = (
+        df.groupBy("colonisable")
+        .count()
+        .withColumn(
+            "colonisable_label", when(col("colonisable") == 1, "Oui").otherwise("Non")
+        )
+        .select("colonisable_label", "count")
+        .orderBy(desc("count"))
+    )
+    colonisable_dist.show()
 
     return stats_df
 
 
-def analyze_habitability_zone(df):
+def analyze_habitability_conditions(df):
     """
-    Analyse de la zone d'habitabilité
+    Analyse des conditions d'habitabilité
     """
-    print("\n🌡️ ANALYSE DE LA ZONE D'HABITABILITÉ")
+    print("\n🌍 ANALYSE DES CONDITIONS D'HABITABILITÉ")
     print("=" * 50)
 
-    # Définition de la zone habitable (température entre -50 et 50°C)
-    habitable_zone = df.withColumn(
-        "zone_habitable",
+    # Conditions pour l'habitabilité
+    habitable_conditions = df.withColumn(
+        "conditions_habitables",
         when(
-            (col("temperature_moyenne") >= -50) & (col("temperature_moyenne") <= 50),
-            "habitable",
-        ).otherwise("non_habitable"),
+            (col("temperature") >= -50)
+            & (col("temperature") <= 50)
+            & (col("gravity") >= 0.5)
+            & (col("gravity") <= 2.0)
+            & (col("water_presence") == 1)
+            & (col("sunlight_hours") >= 8)
+            & (col("sunlight_hours") <= 16),
+            "Potentiellement habitable",
+        ).otherwise("Non habitable"),
     )
 
-    # Statistiques par zone
-    zone_stats = habitable_zone.groupBy("zone_habitable").agg(
+    # Statistiques par conditions d'habitabilité
+    habitability_stats = habitable_conditions.groupBy("conditions_habitables").agg(
         count("*").alias("nombre_planetes"),
-        avg("masse").alias("masse_moyenne"),
-        avg("rayon").alias("rayon_moyen"),
-        avg("distance").alias("distance_moyenne"),
+        avg("gravity").alias("gravite_moyenne"),
+        avg("temperature").alias("temperature_moyenne"),
+        avg("sunlight_hours").alias("heures_soleil_moyenne"),
     )
 
-    print("Statistiques par zone d'habitabilité:")
-    zone_stats.show()
+    print("Statistiques par conditions d'habitabilité:")
+    habitability_stats.show()
 
     # Planètes potentiellement habitables
-    potentially_habitable = habitable_zone.filter(
-        (col("zone_habitable") == "habitable")
-        & (col("rayon") >= 0.5)
-        & (col("rayon") <= 2.0)
-        & (col("masse") >= 0.1)
-        & (col("masse") <= 10.0)
+    potentially_habitable = habitable_conditions.filter(
+        col("conditions_habitables") == "Potentiellement habitable"
     )
 
-    print(f"\nPlanètes potentiellement habitables:")
+    print("\nPlanètes potentiellement habitables:")
     potentially_habitable.select(
-        "nom", "masse", "rayon", "temperature_moyenne", "distance"
+        "name",
+        "gravity",
+        "temperature",
+        "sunlight_hours",
+        "water_presence",
+        "num_moons",
     ).show()
 
-    return habitable_zone
+    return habitable_conditions
+
+
+def analyze_colonisation_potential(df):
+    """
+    Analyse du potentiel de colonisation
+    """
+    print("\n🚀 ANALYSE DU POTENTIEL DE COLONISATION")
+    print("=" * 50)
+
+    # Score de colonisation basé sur plusieurs facteurs
+    colonisation_score = df.withColumn(
+        "score_colonisation",
+        (
+            # Température favorable (0-40°C)
+            when((col("temperature") >= 0) & (col("temperature") <= 40), 20).otherwise(
+                0
+            )
+            +
+            # Gravité proche de la Terre (0.8-1.2)
+            when((col("gravity") >= 0.8) & (col("gravity") <= 1.2), 25).otherwise(0)
+            +
+            # Présence d'eau
+            when(col("water_presence") == 1, 30).otherwise(0)
+            +
+            # Heures de soleil adéquates (10-14h)
+            when(
+                (col("sunlight_hours") >= 10) & (col("sunlight_hours") <= 14), 15
+            ).otherwise(0)
+            +
+            # Ressources minérales abondantes (>500)
+            when(col("minerals") > 500, 10).otherwise(5)
+        ),
+    ).withColumn(
+        "potentiel_colonisation",
+        when(col("score_colonisation") >= 80, "Excellent")
+        .when(col("score_colonisation") >= 60, "Bon")
+        .when(col("score_colonisation") >= 40, "Moyen")
+        .otherwise("Faible"),
+    )
+
+    # Distribution des scores de colonisation
+    colonisation_dist = (
+        colonisation_score.groupBy("potentiel_colonisation")
+        .agg(
+            count("*").alias("nombre_planetes"),
+            avg("score_colonisation").alias("score_moyen"),
+        )
+        .orderBy(desc("score_moyen"))
+    )
+
+    print("Distribution du potentiel de colonisation:")
+    colonisation_dist.show()
+
+    # Top 10 des planètes pour la colonisation
+    top_colonisation = colonisation_score.orderBy(desc("score_colonisation")).limit(10)
+
+    print("\nTop 10 des planètes pour la colonisation:")
+    top_colonisation.select(
+        "name",
+        "score_colonisation",
+        "potentiel_colonisation",
+        "temperature",
+        "gravity",
+        "water_presence",
+        "minerals",
+    ).show()
+
+    return colonisation_score
 
 
 def detect_outliers(df):
@@ -157,33 +249,42 @@ def detect_outliers(df):
     print("\n🚨 DÉTECTION D'ANOMALIES")
     print("=" * 50)
 
-    # Calcul des quartiles pour la masse
-    masse_quartiles = df.approxQuantile("masse", [0.25, 0.5, 0.75], 0.05)
-    if len(masse_quartiles) == 3:
-        q1, median, q3 = masse_quartiles
-        iqr = q3 - q1
-        lower_bound = q1 - 1.5 * iqr
-        upper_bound = q3 + 1.5 * iqr
+    # Calcul des quartiles pour différentes variables
+    variables = [
+        "gravity",
+        "temperature",
+        "sunlight_hours",
+        "rotation_time",
+        "minerals",
+    ]
 
-        print(f"Analyse de la masse:")
-        print(f"  Q1: {q1:.2f}, Médiane: {median:.2f}, Q3: {q3:.2f}")
-        print(f"  Seuils d'anomalie: [{lower_bound:.2f}, {upper_bound:.2f}]")
+    for var in variables:
+        print("\nAnalyse de {}:".format(var))
+        quartiles = df.approxQuantile(var, [0.25, 0.5, 0.75], 0.05)
+        if len(quartiles) == 3:
+            q1, median, q3 = quartiles
+            iqr = q3 - q1
+            lower_bound = q1 - 1.5 * iqr
+            upper_bound = q3 + 1.5 * iqr
 
-        # Planètes avec masses anormales
-        mass_outliers = df.filter(
-            (col("masse") < lower_bound) | (col("masse") > upper_bound)
-        )
+            print("  Q1: {:.2f}, Médiane: {:.2f}, Q3: {:.2f}".format(q1, median, q3))
+            print(
+                "  Seuils d'anomalie: [{:.2f}, {:.2f}]".format(lower_bound, upper_bound)
+            )
 
-        print(f"\nPlanètes avec masses anormales:")
-        mass_outliers.select("nom", "masse", "type").show()
+            # Planètes avec valeurs anormales
+            outliers = df.filter((col(var) < lower_bound) | (col(var) > upper_bound))
 
-    # Planètes avec températures extrêmes
-    temp_extremes = df.filter(
-        (col("temperature_moyenne") < -200) | (col("temperature_moyenne") > 2000)
-    )
-
-    print(f"\nPlanètes avec températures extrêmes:")
-    temp_extremes.select("nom", "temperature_moyenne", "type").show()
+            outlier_count = outliers.count()
+            if outlier_count > 0:
+                print(
+                    "  Planètes avec {} anormal ({} trouvées):".format(
+                        var, outlier_count
+                    )
+                )
+                outliers.select("name", var).show(5)
+            else:
+                print("  Aucune anomalie détectée pour {}".format(var))
 
     return df
 
@@ -192,7 +293,7 @@ def main():
     """
     Fonction principale de traitement des données
     """
-    print("🚀 PROCESSEUR SIMPLE DE DÉCOUVERTES DE PLANÈTES")
+    print("🚀 PROCESSEUR DE DONNÉES PLANÉTAIRES")
     print("=" * 60)
 
     # Configuration
@@ -206,15 +307,7 @@ def main():
         print(f"📡 Connexion à Kafka: {kafka_servers}")
         print(f"📊 Topic: {topic}")
 
-        # Lecture du stream Kafka
-        df = read_kafka_stream(spark, kafka_servers, topic)
-
-        # Affichage de la structure des données
-        print("\n🔍 Schéma des données:")
-        df.printSchema()
-
         # Pour le mode batch (traitement des données existantes)
-        # On peut lire depuis Kafka en mode batch d'abord
         batch_df = (
             spark.read.format("kafka")
             .option("kafka.bootstrap.servers", kafka_servers)
@@ -238,7 +331,8 @@ def main():
             if parsed_batch.count() > 0:
                 # Analyses sur les données existantes
                 calculate_basic_stats(parsed_batch)
-                analyze_habitability_zone(parsed_batch)
+                analyze_habitability_conditions(parsed_batch)
+                analyze_colonisation_potential(parsed_batch)
                 detect_outliers(parsed_batch)
 
                 # Sauvegarde des résultats (si possible)
@@ -251,7 +345,9 @@ def main():
 
         else:
             print("\n⚠️ Aucune donnée trouvée dans Kafka")
-            print("Envoyez des découvertes via l'API Flask d'abord!")
+            print("Envoyez des données via l'API Flask d'abord!")
+            print("Exemple:")
+            print("curl -X POST http://localhost:5001/discoveries/dataset")
 
         print("\n✅ ANALYSE TERMINÉE")
 

@@ -1,150 +1,246 @@
-from flask import Flask, request, jsonify
-from validate import validate_dataset_planet_data
-from producer import send_to_kafka
-import logging
-import uuid
+import os
+import json
 from datetime import datetime
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import logging
+import csv
 
-# Configuration des logs
+from validate import PlanetDiscovery, PlanetDiscoveryResponse
+from producer import send_to_kafka
+
+# Configuration du logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route("/", methods=["GET"])
 def health_check():
-    """Point de santé de l'API"""
-    return (
-        jsonify(
-            {
-                "status": "healthy",
-                "service": "Planet Discovery API",
-                "timestamp": datetime.now().isoformat(),
-            }
-        ),
-        200,
+    """Endpoint de vérification de santé du service"""
+    return jsonify(
+        {
+            "service": "Planet Discovery API",
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+        }
     )
 
 
 @app.route("/discoveries", methods=["POST"])
-def receive_discovery():
+def create_discovery():
     """
-    Endpoint pour recevoir les découvertes de planètes selon le modèle de l'énoncé
+    Endpoint pour enregistrer une nouvelle découverte de planète
+    Utilise la structure du CSV : Name, Num_Moons, Minerals, Gravity,
+    Sunlight_Hours, Temperature, Rotation_Time, Water_Presence, Colonisable
     """
     try:
-        # Vérification que la requête contient du JSON
-        if not request.is_json:
-            return jsonify({"error": "Content-Type doit être application/json"}), 400
-
+        # Récupération des données de la requête
         data = request.get_json()
-
-        # Vérification que les données ne sont pas vides
         if not data:
-            return jsonify({"error": "Aucune donnée fournie"}), 400
+            return jsonify({"error": "Aucune donnée JSON fournie"}), 400
 
-        # Génération automatique de l'ID si non fourni
-        if "id" not in data or not data["id"]:
-            data["id"] = str(uuid.uuid4())
+        logger.info(f"Nouvelle découverte reçue: {data}")
 
-        # Ajout du timestamp de réception
-        data["timestamp_reception"] = datetime.now().isoformat()
+        # Validation avec Pydantic
+        planet = PlanetDiscovery(**data)
 
-        # Validation des données
-        valid, message = validate_dataset_planet_data(data)
-        if not valid:
-            logger.warning(f"Validation échouée: {message}")
-            return jsonify({"error": message}), 400
+        # Préparation du message pour Kafka
+        kafka_message = {
+            "name": planet.name,
+            "num_moons": planet.num_moons,
+            "minerals": planet.minerals,
+            "gravity": planet.gravity,
+            "sunlight_hours": planet.sunlight_hours,
+            "temperature": planet.temperature,
+            "rotation_time": planet.rotation_time,
+            "water_presence": planet.water_presence,
+            "colonisable": planet.colonisable,
+            "timestamp_reception": planet.timestamp_reception,
+        }
 
         # Envoi vers Kafka
-        try:
-            send_to_kafka("planet_discoveries", data)
-            logger.info(
-                f"Découverte de planète envoyée avec succès - ID: {data['id']}, Nom: {data.get('nom', 'N/A')}"
+        kafka_broker = os.getenv("KAFKA_BROKER", "localhost:29092")
+        topic = "planet_discoveries"
+
+        success = send_to_kafka(topic, kafka_message)
+
+        if success:
+            logger.info(f"Découverte envoyée vers Kafka: {planet.name}")
+            response = PlanetDiscoveryResponse(
+                message=f"Découverte de la planète '{planet.name}' enregistrée avec succès",
+                planet_data=planet,
             )
-        except Exception as kafka_error:
-            logger.error(f"Erreur lors de l'envoi vers Kafka: {str(kafka_error)}")
+            return jsonify(response.dict()), 201
+        else:
+            logger.error(f"Échec de l'envoi vers Kafka pour: {planet.name}")
             return (
-                jsonify({"error": "Erreur lors de l'envoi vers le pipeline Kafka"}),
+                jsonify(
+                    {
+                        "error": "Échec de l'enregistrement dans le système de streaming",
+                        "status": "failed",
+                    }
+                ),
                 500,
             )
 
-        return (
-            jsonify(
-                {
-                    "message": "Découverte reçue et envoyée vers Kafka avec succès",
-                    "id": data["id"],
-                    "timestamp": data["timestamp_reception"],
-                }
-            ),
-            201,
-        )
+    except ValueError as ve:
+        logger.warning(f"Erreur de validation: {str(ve)}")
+        return jsonify({"error": f"Données invalides: {str(ve)}"}), 400
 
     except Exception as e:
-        logger.error(f"Erreur inattendue: {str(e)}")
+        logger.error(f"Erreur interne: {str(e)}")
         return jsonify({"error": "Erreur interne du serveur"}), 500
 
 
 @app.route("/discoveries/dataset", methods=["POST"])
-def receive_dataset_discovery():
+def load_dataset():
     """
-    Endpoint pour les données du dataset CSV existant (pour compatibilité)
+    Endpoint pour charger des données depuis le dataset CSV
     """
     try:
-        if not request.is_json:
-            return jsonify({"error": "Content-Type doit être application/json"}), 400
+        # Lecture du fichier CSV
+        csv_file_path = "planets_dataset.csv"
+        if not os.path.exists(csv_file_path):
+            return jsonify({"error": "Fichier dataset non trouvé"}), 404
 
-        data = request.get_json()
+        # Traitement des données du dataset avec le module csv
+        kafka_broker = os.getenv("KAFKA_BROKER", "localhost:29092")
+        topic = "dataset_planets"
 
-        if not data:
-            return jsonify({"error": "Aucune donnée fournie"}), 400
+        success_count = 0
+        error_count = 0
+        total_processed = 0
 
-        # Validation des données du dataset
-        valid, message = validate_dataset_planet_data(data)
-        if not valid:
-            logger.warning(f"Validation dataset échouée: {message}")
-            return jsonify({"error": message}), 400
+        with open(csv_file_path, "r") as file:
+            csv_reader = csv.DictReader(file)
 
-        # Ajout d'un ID et timestamp
-        data["id"] = str(uuid.uuid4())
-        data["timestamp_reception"] = datetime.now().isoformat()
+            for row in csv_reader:
+                total_processed += 1
+                try:
+                    # Validation des données
+                    planet_data = {
+                        "name": str(row["Name"]),
+                        "num_moons": int(row["Num_Moons"]),
+                        "minerals": int(row["Minerals"]),
+                        "gravity": float(row["Gravity"]),
+                        "sunlight_hours": float(row["Sunlight_Hours"]),
+                        "temperature": float(row["Temperature"]),
+                        "rotation_time": float(row["Rotation_Time"]),
+                        "water_presence": int(row["Water_Presence"]),
+                        "colonisable": int(row["Colonisable"]),
+                    }
 
-        # Envoi vers Kafka avec un topic différent
-        try:
-            send_to_kafka("dataset_planets", data)
-            logger.info(
-                f"Planète du dataset envoyée - ID: {data['id']}, Nom: {data.get('Name', 'N/A')}"
-            )
-        except Exception as kafka_error:
-            logger.error(f"Erreur Kafka: {str(kafka_error)}")
-            return jsonify({"error": "Erreur lors de l'envoi vers Kafka"}), 500
+                    planet = PlanetDiscovery(**planet_data)
+
+                    # Préparation du message pour Kafka
+                    kafka_message = {
+                        "name": planet.name,
+                        "num_moons": planet.num_moons,
+                        "minerals": planet.minerals,
+                        "gravity": planet.gravity,
+                        "sunlight_hours": planet.sunlight_hours,
+                        "temperature": planet.temperature,
+                        "rotation_time": planet.rotation_time,
+                        "water_presence": planet.water_presence,
+                        "colonisable": planet.colonisable,
+                        "timestamp_reception": planet.timestamp_reception,
+                        "source": "dataset",
+                    }
+
+                    # Envoi vers Kafka
+                    if send_to_kafka(topic, kafka_message):
+                        success_count += 1
+                    else:
+                        error_count += 1
+                        logger.warning(f"Échec Kafka pour planète: {planet.name}")
+
+                except Exception as e:
+                    error_count += 1
+                    logger.error(f"Erreur ligne {total_processed}: {str(e)}")
+
+        logger.info(
+            f"Dataset traité: {total_processed} planètes, {success_count} succès, {error_count} erreurs"
+        )
 
         return (
             jsonify(
                 {
-                    "message": "Données du dataset reçues et envoyées vers Kafka",
-                    "id": data["id"],
-                    "timestamp": data["timestamp_reception"],
+                    "message": f"Dataset traité: {success_count} planètes envoyées, {error_count} erreurs",
+                    "success_count": success_count,
+                    "error_count": error_count,
+                    "total_processed": total_processed,
                 }
             ),
-            201,
+            200,
         )
 
     except Exception as e:
-        logger.error(f"Erreur inattendue: {str(e)}")
-        return jsonify({"error": "Erreur interne du serveur"}), 500
+        logger.error(f"Erreur lors du chargement du dataset: {str(e)}")
+        return jsonify({"error": f"Erreur lors du chargement: {str(e)}"}), 500
 
 
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({"error": "Endpoint non trouvé"}), 404
+@app.route("/stats", methods=["GET"])
+def get_stats():
+    """Endpoint pour obtenir des statistiques basiques"""
+    try:
+        csv_file_path = "planets_dataset.csv"
+        if os.path.exists(csv_file_path):
+            # Calcul manuel des statistiques sans pandas
+            total_planets = 0
+            planets_with_water = 0
+            colonisable_planets = 0
+            temperatures = []
+            gravities = []
+            max_moons = 0
+            total_minerals = 0
 
+            with open(csv_file_path, "r") as file:
+                csv_reader = csv.DictReader(file)
 
-@app.errorhandler(405)
-def method_not_allowed(error):
-    return jsonify({"error": "Méthode HTTP non autorisée"}), 405
+                for row in csv_reader:
+                    total_planets += 1
+
+                    if int(row["Water_Presence"]) == 1:
+                        planets_with_water += 1
+
+                    if int(row["Colonisable"]) == 1:
+                        colonisable_planets += 1
+
+                    temperatures.append(float(row["Temperature"]))
+                    gravities.append(float(row["Gravity"]))
+
+                    num_moons = int(row["Num_Moons"])
+                    if num_moons > max_moons:
+                        max_moons = num_moons
+
+                    total_minerals += int(row["Minerals"])
+
+            avg_temperature = (
+                sum(temperatures) / len(temperatures) if temperatures else 0
+            )
+            avg_gravity = sum(gravities) / len(gravities) if gravities else 0
+
+            stats = {
+                "total_planets": total_planets,
+                "planets_with_water": planets_with_water,
+                "colonisable_planets": colonisable_planets,
+                "average_temperature": round(avg_temperature, 2),
+                "average_gravity": round(avg_gravity, 2),
+                "max_moons": max_moons,
+                "total_minerals": total_minerals,
+            }
+            return jsonify(stats), 200
+        else:
+            return jsonify({"error": "Dataset non disponible"}), 404
+    except Exception as e:
+        logger.error(f"Erreur stats: {str(e)}")
+        return jsonify({"error": "Erreur lors du calcul des statistiques"}), 500
 
 
 if __name__ == "__main__":
-    logger.info("Démarrage de l'API Planet Discovery")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.getenv("PORT", 5000))
+    debug = os.getenv("FLASK_ENV") == "development"
+    app.run(host="0.0.0.0", port=port, debug=debug)

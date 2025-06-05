@@ -1,55 +1,67 @@
-# Champs attendus
-dataset_required_fields = [
-    "Name", "Num_Moons", "Minerals", "Gravity", "Sunlight_Hours",
-    "Temperature", "Rotation_Time", "Water_Presence", "Colonisable"
-]
+from pydantic import BaseModel, Field, validator
+from typing import Optional
+from datetime import datetime
+import re
 
-# Valeurs valides après transformation
-valid_binary_values = ["oui", "non"]
 
-def validate_dataset_planet_data(data):
+class PlanetDiscovery(BaseModel):
     """
-    Valide les données d'une planète du dataset CSV (avec Water_Presence et Colonisable en 0/1).
+    Modèle de validation pour les découvertes de planètes
+    Basé sur la structure du fichier CSV planets_dataset.csv
     """
-    for field in dataset_required_fields:
-        if field not in data:
-            return False, f"Champ manquant : {field}"
-        if data[field] is None or str(data[field]).strip() == "":
-            return False, f"Le champ '{field}' ne peut pas être vide"
 
-    try:
-        # Num_Moons : entier >= 0
-        num_moons = int(data["Num_Moons"])
-        if num_moons < 0:
-            return False, "Le nombre de lunes doit être positif"
+    name: str = Field(..., description="Nom de la planète")
+    num_moons: int = Field(..., ge=0, description="Nombre de satellites naturels")
+    minerals: int = Field(..., ge=0, description="Quantité de minéraux")
+    gravity: float = Field(
+        ..., gt=0, description="Gravité (multiple de la gravité terrestre)"
+    )
+    sunlight_hours: float = Field(
+        ..., ge=0, le=24, description="Heures d'exposition au soleil par jour"
+    )
+    temperature: float = Field(..., description="Température moyenne (en Celsius)")
+    rotation_time: float = Field(..., gt=0, description="Temps de rotation (en heures)")
+    water_presence: int = Field(
+        ..., ge=0, le=1, description="Présence d'eau (0=non, 1=oui)"
+    )
+    colonisable: int = Field(
+        ..., ge=0, le=1, description="Planète colonisable (0=non, 1=oui)"
+    )
 
-        # Valeurs numériques
-        float(data["Gravity"])
-        float(data["Sunlight_Hours"])
-        float(data["Temperature"])
-        float(data["Rotation_Time"])
+    # Champs automatiques
+    timestamp_reception: Optional[str] = Field(
+        default=None, description="Timestamp de réception"
+    )
 
-        # Water_Presence : 0/1 → "non"/"oui"
-        wp_raw = str(data["Water_Presence"]).strip()
-        water_val = "oui" if wp_raw == "1" else "non"
-        if water_val not in valid_binary_values:
-            return (
-                False,
-                f"Valeur invalide pour Water_Presence : {wp_raw}. Attendu : 0 ou 1"
-            )
+    @validator("name")
+    def validate_name(cls, v):
+        if not v or len(v.strip()) == 0:
+            raise ValueError("Le nom de la planète ne peut pas être vide")
+        if len(v) > 100:
+            raise ValueError("Le nom de la planète ne peut pas dépasser 100 caractères")
+        return v.strip()
 
-        # Colonisable : 0/1 → "non"/"oui"
-        col_raw = str(data["Colonisable"]).strip()
-        colonisable_val = "oui" if col_raw == "1" else "non"
-        if colonisable_val not in valid_binary_values:
-            return (
-                False,
-                f"Valeur invalide pour Colonisable : {col_raw}. Attendu : 0 ou 1"
-            )
+    @validator("water_presence")
+    def validate_water_presence(cls, v):
+        if v not in [0, 1]:
+            raise ValueError("La présence d'eau doit être 0 (non) ou 1 (oui)")
+        return v
 
-    except ValueError as e:
-        return False, f"Erreur de type numérique : {str(e)}"
-    except Exception as e:
-        return False, f"Erreur : {str(e)}"
+    @validator("colonisable")
+    def validate_colonisable(cls, v):
+        if v not in [0, 1]:
+            raise ValueError("Colonisable doit être 0 (non) ou 1 (oui)")
+        return v
 
-    return True, "Données valides"
+    def model_post_init(self, __context):
+        """Définit automatiquement le timestamp si non fourni"""
+        if self.timestamp_reception is None:
+            self.timestamp_reception = datetime.now().isoformat()
+
+
+class PlanetDiscoveryResponse(BaseModel):
+    """Modèle de réponse pour les découvertes de planètes"""
+
+    message: str
+    planet_data: PlanetDiscovery
+    status: str = "success"
