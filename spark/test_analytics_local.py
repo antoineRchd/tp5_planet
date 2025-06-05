@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script de démonstration des analyses avancées - Version locale
-Peut être exécuté sans Spark pour démontrer les concepts
+Peut être exécuté sans Spark pour démontrer les concepts avec la nouvelle structure CSV
 """
 
 import pandas as pd
@@ -17,110 +17,175 @@ from datetime import datetime
 
 def create_sample_dataset():
     """
-    Crée un dataset d'exemple de planètes pour les analyses
+    Crée un dataset d'exemple de planètes avec la nouvelle structure CSV
     """
     data = [
-        # Planètes habitables
+        # Planètes colonisables/habitables
         {
-            "nom": "Kepler-442b",
-            "masse": 2.34,
-            "rayon": 1.34,
-            "distance": 1206.0,
-            "temperature": -40.0,
-            "type": "super-terre",
-            "eau": 1,
-            "habitable": 1,
+            "Name": "Kepler-442b",
+            "Num_Moons": 2,
+            "Minerals": 65,
+            "Gravity": 0.85,
+            "Sunlight_Hours": 8.2,
+            "Temperature": -15.5,
+            "Rotation_Time": 112.3,
+            "Water_Presence": 0,
+            "Colonisable": 1,
         },
         {
-            "nom": "TRAPPIST-1e",
-            "masse": 0.772,
-            "rayon": 0.918,
-            "distance": 39.0,
-            "temperature": -22.0,
-            "type": "terrestre",
-            "eau": 1,
-            "habitable": 1,
+            "Name": "TRAPPIST-1e",
+            "Num_Moons": 0,
+            "Minerals": 58,
+            "Gravity": 0.92,
+            "Sunlight_Hours": 7.1,
+            "Temperature": -22.0,
+            "Rotation_Time": 6.1,
+            "Water_Presence": 1,
+            "Colonisable": 1,
         },
         {
-            "nom": "Proxima Centauri b",
-            "masse": 1.17,
-            "rayon": 1.1,
-            "distance": 4.24,
-            "temperature": -39.0,
-            "type": "terrestre",
-            "eau": 0,
-            "habitable": 1,
+            "Name": "Gliese-667Cc",
+            "Num_Moons": 1,
+            "Minerals": 71,
+            "Gravity": 1.5,
+            "Sunlight_Hours": 9.3,
+            "Temperature": -3.0,
+            "Rotation_Time": 28.1,
+            "Water_Presence": 1,
+            "Colonisable": 1,
         },
         {
-            "nom": "Gliese 667Cc",
-            "masse": 3.7,
-            "rayon": 1.5,
-            "distance": 23.6,
-            "temperature": -3.0,
-            "type": "super-terre",
-            "eau": 1,
-            "habitable": 1,
+            "Name": "K2-18b",
+            "Num_Moons": 2,
+            "Minerals": 83,
+            "Gravity": 2.3,
+            "Sunlight_Hours": 5.9,
+            "Temperature": -23.0,
+            "Rotation_Time": 33.0,
+            "Water_Presence": 1,
+            "Colonisable": 1,
         },
         {
-            "nom": "K2-18b",
-            "masse": 8.6,
-            "rayon": 2.3,
-            "distance": 124.0,
-            "temperature": -23.0,
-            "type": "super-terre",
-            "eau": 1,
-            "habitable": 1,
-        },
-        # Planètes non habitables
-        {
-            "nom": "WASP-12b",
-            "masse": 445.0,
-            "rayon": 1.79,
-            "distance": 871.0,
-            "temperature": 2516.0,
-            "type": "géante gazeuse",
-            "eau": 0,
-            "habitable": 0,
+            "Name": "Kepler-452b",
+            "Num_Moons": 1,
+            "Minerals": 78,
+            "Gravity": 1.2,
+            "Sunlight_Hours": 10.5,
+            "Temperature": 5.0,
+            "Rotation_Time": 385.0,
+            "Water_Presence": 1,
+            "Colonisable": 1,
         },
         {
-            "nom": "CoRoT-7b",
-            "masse": 4.8,
-            "rayon": 1.58,
-            "distance": 489.0,
-            "temperature": 1800.0,
-            "type": "super-terre",
-            "eau": 0,
-            "habitable": 0,
+            "Name": "HD-40307g",
+            "Num_Moons": 3,
+            "Minerals": 82,
+            "Gravity": 1.8,
+            "Sunlight_Hours": 6.8,
+            "Temperature": 15.0,
+            "Rotation_Time": 197.8,
+            "Water_Presence": 1,
+            "Colonisable": 1,
         },
         {
-            "nom": "Kepler-7b",
-            "masse": 150.0,
-            "rayon": 1.48,
-            "distance": 3000.0,
-            "temperature": 1540.0,
-            "type": "géante gazeuse",
-            "eau": 0,
-            "habitable": 0,
+            "Name": "Ocean-World-1",
+            "Num_Moons": 1,
+            "Minerals": 42,
+            "Gravity": 1.05,
+            "Sunlight_Hours": 9.1,
+            "Temperature": 12.0,
+            "Rotation_Time": 31.4,
+            "Water_Presence": 1,
+            "Colonisable": 1,
+        },
+        # Planètes non colonisables
+        {
+            "Name": "Venus-like-1",
+            "Num_Moons": 0,
+            "Minerals": 23,
+            "Gravity": 0.9,
+            "Sunlight_Hours": 12.1,
+            "Temperature": 462.0,
+            "Rotation_Time": 243.0,
+            "Water_Presence": 0,
+            "Colonisable": 0,
         },
         {
-            "nom": "OGLE-390Lb",
-            "masse": 5.5,
-            "rayon": 1.5,
-            "distance": 21500.0,
-            "temperature": -223.0,
-            "type": "super-terre",
-            "eau": 0,
-            "habitable": 0,
+            "Name": "Mercury-like-1",
+            "Num_Moons": 0,
+            "Minerals": 45,
+            "Gravity": 0.38,
+            "Sunlight_Hours": 14.2,
+            "Temperature": 167.0,
+            "Rotation_Time": 58.6,
+            "Water_Presence": 0,
+            "Colonisable": 0,
         },
         {
-            "nom": "PSR B1257+12",
-            "masse": 0.02,
-            "rayon": 0.5,
-            "distance": 2300.0,
-            "temperature": -213.0,
-            "type": "terrestre",
-            "eau": 0,
-            "habitable": 0,
+            "Name": "Mars-like-1",
+            "Num_Moons": 2,
+            "Minerals": 31,
+            "Gravity": 0.38,
+            "Sunlight_Hours": 9.8,
+            "Temperature": -80.0,
+            "Rotation_Time": 24.6,
+            "Water_Presence": 0,
+            "Colonisable": 0,
+        },
+        {
+            "Name": "Frozen-World-1",
+            "Num_Moons": 0,
+            "Minerals": 67,
+            "Gravity": 0.9,
+            "Sunlight_Hours": 5.4,
+            "Temperature": -156.0,
+            "Rotation_Time": 67.8,
+            "Water_Presence": 1,
+            "Colonisable": 0,
+        },
+        {
+            "Name": "High-Gravity-1",
+            "Num_Moons": 4,
+            "Minerals": 88,
+            "Gravity": 3.8,
+            "Sunlight_Hours": 7.9,
+            "Temperature": 18.0,
+            "Rotation_Time": 14.2,
+            "Water_Presence": 1,
+            "Colonisable": 0,
+        },
+        {
+            "Name": "Low-Gravity-1",
+            "Num_Moons": 0,
+            "Minerals": 55,
+            "Gravity": 0.3,
+            "Sunlight_Hours": 8.9,
+            "Temperature": 8.0,
+            "Rotation_Time": 19.7,
+            "Water_Presence": 1,
+            "Colonisable": 0,
+        },
+        {
+            "Name": "Hot-Jupiter-1",
+            "Num_Moons": 12,
+            "Minerals": 15,
+            "Gravity": 3.2,
+            "Sunlight_Hours": 16.5,
+            "Temperature": 1200.0,
+            "Rotation_Time": 2.1,
+            "Water_Presence": 0,
+            "Colonisable": 0,
+        },
+        {
+            "Name": "Desert-World-1",
+            "Num_Moons": 0,
+            "Minerals": 89,
+            "Gravity": 0.7,
+            "Sunlight_Hours": 13.8,
+            "Temperature": 78.0,
+            "Rotation_Time": 28.7,
+            "Water_Presence": 0,
+            "Colonisable": 0,
         },
     ]
 
@@ -129,44 +194,79 @@ def create_sample_dataset():
 
 def calculate_statistics(df):
     """
-    Calcule les statistiques de base
+    Calcule les statistiques de base avec la nouvelle structure
     """
     print("📊 STATISTIQUES DE BASE")
     print("=" * 50)
 
     print(f"Nombre total de planètes: {len(df)}")
-    print(f"Planètes habitables: {df['habitable'].sum()}")
-    print(f"Planètes non habitables: {len(df) - df['habitable'].sum()}")
+    print(f"Planètes colonisables: {df['Colonisable'].sum()}")
+    print(f"Planètes non colonisables: {len(df) - df['Colonisable'].sum()}")
 
-    print("\n🌍 Distribution par type:")
-    print(df["type"].value_counts())
+    print("\n💧 Distribution par présence d'eau:")
+    water_dist = df["Water_Presence"].value_counts()
+    print(f"  Avec eau: {water_dist.get(1, 0)}")
+    print(f"  Sans eau: {water_dist.get(0, 0)}")
+
+    print("\n🌙 Distribution par nombre de lunes:")
+    moon_dist = df["Num_Moons"].value_counts().sort_index()
+    for moons, count in moon_dist.items():
+        print(f"  {moons} lune(s): {count}")
 
     print("\n📈 Statistiques numériques:")
-    stats = df[["masse", "rayon", "distance", "temperature"]].describe()
+    numeric_cols = [
+        "Num_Moons",
+        "Minerals",
+        "Gravity",
+        "Sunlight_Hours",
+        "Temperature",
+        "Rotation_Time",
+    ]
+    stats = df[numeric_cols].describe()
     print(stats.round(2))
+
+    # Zones d'habitabilité
+    habitable_temp = df[(df["Temperature"] >= -50) & (df["Temperature"] <= 50)]
+    print(
+        f"\n🌡️ Planètes dans zone de température habitable (-50°C à 50°C): {len(habitable_temp)}"
+    )
+
+    earth_like_gravity = df[(df["Gravity"] >= 0.8) & (df["Gravity"] <= 1.2)]
+    print(
+        f"🌍 Planètes avec gravité proche de la Terre (0.8-1.2g): {len(earth_like_gravity)}"
+    )
 
     return stats
 
 
 def analyze_correlations(df):
     """
-    Analyse les corrélations
+    Analyse les corrélations avec la nouvelle structure
     """
     print("\n🔗 ANALYSE DES CORRÉLATIONS")
     print("=" * 50)
 
-    numeric_cols = ["masse", "rayon", "distance", "temperature", "eau", "habitable"]
+    numeric_cols = [
+        "Num_Moons",
+        "Minerals",
+        "Gravity",
+        "Sunlight_Hours",
+        "Temperature",
+        "Rotation_Time",
+        "Water_Presence",
+        "Colonisable",
+    ]
     correlation_matrix = df[numeric_cols].corr()
 
     print("Matrice de corrélation:")
     print(correlation_matrix.round(3))
 
-    print("\n🔍 Corrélations importantes avec l'habitabilité:")
-    habitability_corr = correlation_matrix["habitable"].sort_values(
+    print("\n🔍 Corrélations importantes avec la colonisabilité:")
+    colonisable_corr = correlation_matrix["Colonisable"].sort_values(
         key=abs, ascending=False
     )
-    for feature, corr in habitability_corr.items():
-        if feature != "habitable" and abs(corr) > 0.3:
+    for feature, corr in colonisable_corr.items():
+        if feature != "Colonisable" and abs(corr) > 0.2:
             print(f"  {feature}: {corr:.3f}")
 
     return correlation_matrix
@@ -174,13 +274,13 @@ def analyze_correlations(df):
 
 def perform_clustering(df):
     """
-    Effectue un clustering des planètes
+    Effectue un clustering des planètes avec la nouvelle structure
     """
     print("\n🎯 CLUSTERING DES PLANÈTES")
     print("=" * 50)
 
     # Préparation des données
-    features = ["masse", "rayon", "distance", "temperature"]
+    features = ["Minerals", "Gravity", "Sunlight_Hours", "Temperature", "Rotation_Time"]
     X = df[features].values
 
     # Normalisation
@@ -198,78 +298,144 @@ def perform_clustering(df):
     for i in range(n_clusters):
         cluster_planets = df[df["cluster"] == i]
         print(f"\n🌌 Cluster {i} ({len(cluster_planets)} planètes):")
-        print(f"  Planètes: {', '.join(cluster_planets['nom'].tolist())}")
-        print(f"  Moyenne masse: {cluster_planets['masse'].mean():.2f}")
-        print(f"  Moyenne température: {cluster_planets['temperature'].mean():.2f}")
-        print(f"  % habitables: {cluster_planets['habitable'].mean()*100:.1f}%")
+        print(f"  Planètes: {', '.join(cluster_planets['Name'].tolist())}")
 
-    return df
+        # Caractéristiques moyennes du cluster
+        avg_stats = cluster_planets[features].mean()
+        print(f"  Caractéristiques moyennes:")
+        for feature in features:
+            print(f"    {feature}: {avg_stats[feature]:.2f}")
+
+        # Colonisabilité dans le cluster
+        colonisable_count = cluster_planets["Colonisable"].sum()
+        print(f"  Planètes colonisables: {colonisable_count}/{len(cluster_planets)}")
+
+    return clusters
 
 
-def train_habitability_model(df):
+def engineer_features(df):
     """
-    Entraîne un modèle de prédiction d'habitabilité
+    Crée des features dérivées pour améliorer l'analyse
     """
-    print("\n🤖 MODÈLE D'IA: PRÉDICTION D'HABITABILITÉ")
+    print("\n🔧 INGÉNIERIE DES FEATURES")
     print("=" * 50)
 
-    # Préparation des features
-    features = ["masse", "rayon", "distance", "temperature", "eau"]
-    X = df[features].values
-    y = df["habitable"].values
+    df_enhanced = df.copy()
+
+    # Zone de température habitable
+    df_enhanced["temp_habitable"] = (
+        (df_enhanced["Temperature"] >= -50) & (df_enhanced["Temperature"] <= 50)
+    ).astype(int)
+
+    # Gravité proche de la Terre
+    df_enhanced["gravity_earth_like"] = (
+        (df_enhanced["Gravity"] >= 0.8) & (df_enhanced["Gravity"] <= 1.2)
+    ).astype(int)
+
+    # Ensoleillement optimal
+    df_enhanced["optimal_sunlight"] = (
+        (df_enhanced["Sunlight_Hours"] >= 8) & (df_enhanced["Sunlight_Hours"] <= 12)
+    ).astype(int)
+
+    # Richesse minérale
+    df_enhanced["mineral_rich"] = (df_enhanced["Minerals"] >= 70).astype(int)
+
+    # Score d'habitabilité composite
+    df_enhanced["habitability_score"] = (
+        df_enhanced["temp_habitable"] * 25
+        + df_enhanced["gravity_earth_like"] * 20
+        + df_enhanced["Water_Presence"] * 30
+        + df_enhanced["optimal_sunlight"] * 15
+        + (df_enhanced["Minerals"] / 100.0) * 10
+    )
+
+    print("Features créées:")
+    print("- temp_habitable: Zone de température habitable")
+    print("- gravity_earth_like: Gravité proche de la Terre")
+    print("- optimal_sunlight: Ensoleillement optimal")
+    print("- mineral_rich: Richesse minérale")
+    print("- habitability_score: Score composite d'habitabilité")
+
+    return df_enhanced
+
+
+def train_colonisability_model(df):
+    """
+    Entraîne un modèle de prédiction de colonisabilité
+    """
+    print("\n🤖 ENTRAÎNEMENT DU MODÈLE DE COLONISABILITÉ")
+    print("=" * 50)
+
+    # Ingénierie des features
+    df_enhanced = engineer_features(df)
+
+    # Préparation des données
+    feature_columns = [
+        "Num_Moons",
+        "Minerals",
+        "Gravity",
+        "Sunlight_Hours",
+        "Temperature",
+        "Rotation_Time",
+        "Water_Presence",
+        "temp_habitable",
+        "gravity_earth_like",
+        "optimal_sunlight",
+        "mineral_rich",
+        "habitability_score",
+    ]
+
+    X = df_enhanced[feature_columns]
+    y = df_enhanced["Colonisable"]
 
     # Division train/test
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=42
     )
 
-    # Entraînement Random Forest
+    # Entraînement du modèle
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
 
-    # Prédictions
+    # Prédictions et évaluation
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
 
-    print(f"🎯 Précision du modèle: {accuracy:.2%}")
+    print(f"Précision du modèle: {accuracy:.3f}")
+    print("\nRapport de classification:")
+    print(
+        classification_report(
+            y_test, y_pred, target_names=["Non colonisable", "Colonisable"]
+        )
+    )
 
     # Importance des features
-    feature_importance = list(zip(features, model.feature_importances_))
-    feature_importance.sort(key=lambda x: x[1], reverse=True)
+    feature_importance = pd.DataFrame(
+        {"feature": feature_columns, "importance": model.feature_importances_}
+    ).sort_values("importance", ascending=False)
 
-    print("\n📊 Importance des caractéristiques:")
-    for feature, importance in feature_importance:
-        print(f"  {feature}: {importance:.3f}")
+    print("\n📊 Importance des features:")
+    for _, row in feature_importance.head(8).iterrows():
+        print(f"  {row['feature']}: {row['importance']:.3f}")
 
-    # Test sur de nouvelles planètes
-    print("\n🔮 Prédictions sur nouvelles planètes:")
-    new_planets = [
-        ["Planète X1", 1.5, 1.2, 50.0, 10.0, 1],  # Potentiellement habitable
-        ["Planète X2", 10.0, 3.0, 200.0, 500.0, 0],  # Non habitable
-        ["Planète X3", 0.8, 0.9, 25.0, -10.0, 1],  # Potentiellement habitable
-    ]
-
-    for planet_data in new_planets:
-        name = planet_data[0]
-        features_values = planet_data[1:]
-        prediction = model.predict([features_values])[0]
-        probability = model.predict_proba([features_values])[0][1]
-
-        habitability = "HABITABLE" if prediction == 1 else "NON HABITABLE"
-        print(f"  {name}: {habitability} (probabilité: {probability:.2%})")
-
-    return model
+    return model, feature_importance
 
 
 def detect_anomalies(df):
     """
-    Détecte les anomalies dans les données
+    Détecte les planètes avec des caractéristiques atypiques
     """
     print("\n🚨 DÉTECTION D'ANOMALIES")
     print("=" * 50)
 
     anomalies = []
-    numeric_cols = ["masse", "rayon", "distance", "temperature"]
+    numeric_cols = [
+        "Minerals",
+        "Gravity",
+        "Sunlight_Hours",
+        "Temperature",
+        "Rotation_Time",
+    ]
 
     for col in numeric_cols:
         Q1 = df[col].quantile(0.25)
@@ -281,110 +447,185 @@ def detect_anomalies(df):
 
         col_anomalies = df[(df[col] < lower_bound) | (df[col] > upper_bound)]
 
-        if not col_anomalies.empty:
+        if len(col_anomalies) > 0:
             print(f"\n📏 Anomalies pour {col}:")
             print(f"  Seuils: [{lower_bound:.2f}, {upper_bound:.2f}]")
             for _, planet in col_anomalies.iterrows():
-                print(f"    {planet['nom']}: {planet[col]:.2f}")
-                anomalies.append(planet["nom"])
+                print(f"  {planet['Name']}: {planet[col]:.2f}")
+                anomalies.append(
+                    {
+                        "planet": planet["Name"],
+                        "feature": col,
+                        "value": planet[col],
+                        "expected_range": f"[{lower_bound:.2f}, {upper_bound:.2f}]",
+                    }
+                )
 
-    unique_anomalies = list(set(anomalies))
-    print(f"\n🔍 Planètes avec anomalies: {len(unique_anomalies)}")
-    for anomaly in unique_anomalies:
-        print(f"  - {anomaly}")
+    return anomalies
 
-    return unique_anomalies
+
+def calculate_colonization_scores(df):
+    """
+    Calcule des scores de colonisation personnalisés
+    """
+    print("\n🚀 CALCUL DES SCORES DE COLONISATION")
+    print("=" * 50)
+
+    df_scores = df.copy()
+
+    # Score basé sur multiple critères
+    df_scores["colonization_score"] = (
+        # Température idéale (entre -20 et 30°C)
+        np.where(
+            (df_scores["Temperature"] >= -20) & (df_scores["Temperature"] <= 30),
+            25,
+            np.where(
+                (df_scores["Temperature"] >= -50) & (df_scores["Temperature"] <= 50),
+                15,
+                0,
+            ),
+        )
+        +
+        # Gravité proche de la Terre (0.8 à 1.2)
+        np.where(
+            (df_scores["Gravity"] >= 0.8) & (df_scores["Gravity"] <= 1.2),
+            20,
+            np.where(
+                (df_scores["Gravity"] >= 0.5) & (df_scores["Gravity"] <= 2.0), 10, 0
+            ),
+        )
+        +
+        # Présence d'eau
+        df_scores["Water_Presence"] * 30
+        +
+        # Ressources minérales (normalisé sur 25 points)
+        (df_scores["Minerals"] * 25 / 100)
+    )
+
+    # Top planètes pour colonisation
+    top_planets = df_scores.nlargest(10, "colonization_score")
+
+    print("🏆 Top 10 des planètes pour la colonisation:")
+    for i, (_, planet) in enumerate(top_planets.iterrows(), 1):
+        print(
+            f"  {i:2d}. {planet['Name']:15s}: {planet['colonization_score']:.1f} points"
+        )
+        print(
+            f"      Temp: {planet['Temperature']:6.1f}°C, Gravité: {planet['Gravity']:.2f}g, "
+            f"Eau: {'Oui' if planet['Water_Presence'] else 'Non'}, Minéraux: {planet['Minerals']}"
+        )
+
+    return df_scores
 
 
 def generate_report(df, stats, correlations, model, anomalies):
     """
-    Génère un rapport complet
+    Génère un rapport complet d'analyse
     """
-    print("\n📋 RAPPORT FINAL")
+    print("\n📋 GÉNÉRATION DU RAPPORT FINAL")
     print("=" * 50)
 
     report = {
         "timestamp": datetime.now().isoformat(),
-        "dataset": {
+        "dataset_summary": {
             "total_planets": len(df),
-            "habitable_planets": int(df["habitable"].sum()),
-            "planet_types": df["type"].value_counts().to_dict(),
+            "colonizable_planets": int(df["Colonisable"].sum()),
+            "water_bearing_planets": int(df["Water_Presence"].sum()),
+            "average_temperature": float(df["Temperature"].mean()),
+            "average_gravity": float(df["Gravity"].mean()),
+            "average_minerals": float(df["Minerals"].mean()),
         },
-        "statistics": {
-            "average_mass": float(df["masse"].mean()),
-            "average_radius": float(df["rayon"].mean()),
-            "average_temperature": float(df["temperature"].mean()),
-            "habitable_percentage": float(df["habitable"].mean() * 100),
-        },
-        "correlations": {
-            "water_temperature": float(correlations.loc["eau", "temperature"]),
-            "mass_radius": float(correlations.loc["masse", "rayon"]),
-            "habitability_temperature": float(
-                correlations.loc["habitable", "temperature"]
-            ),
-        },
-        "clustering": {
-            "clusters_found": int(df["cluster"].nunique()),
-            "cluster_distribution": df["cluster"].value_counts().to_dict(),
-        },
-        "anomalies": {"count": len(anomalies), "planets": anomalies},
         "model_performance": {
-            "accuracy": "Évalué sur échantillon test",
-            "key_features": ["température", "présence d'eau", "masse"],
+            "algorithm": "RandomForest",
+            "features_used": [
+                "Num_Moons",
+                "Minerals",
+                "Gravity",
+                "Sunlight_Hours",
+                "Temperature",
+                "Rotation_Time",
+                "Water_Presence",
+                "temp_habitable",
+                "gravity_earth_like",
+                "optimal_sunlight",
+                "mineral_rich",
+                "habitability_score",
+            ],
         },
+        "anomalies_detected": len(anomalies),
+        "key_insights": [
+            f"Temperature shows correlation of {correlations.loc['Temperature', 'Colonisable']:.3f} with colonizability",
+            f"Water presence shows correlation of {correlations.loc['Water_Presence', 'Colonisable']:.3f} with colonizability",
+            f"Gravity shows correlation of {correlations.loc['Gravity', 'Colonisable']:.3f} with colonizability",
+            f"{len(df[(df['Temperature'] >= -50) & (df['Temperature'] <= 50)])} planets in habitable temperature zone",
+        ],
     }
 
     # Sauvegarde du rapport
-    with open("/tmp/planet_analysis_report.json", "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2, ensure_ascii=False)
+    with open(
+        f"/tmp/planet_analysis_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+        "w",
+    ) as f:
+        json.dump(report, f, indent=2)
 
-    print("✅ Analyse complète terminée!")
-    print(f"📄 Rapport sauvegardé: /tmp/planet_analysis_report.json")
-    print(f"🌍 {report['dataset']['total_planets']} planètes analysées")
+    print("✅ Rapport généré et sauvegardé")
+    print(f"📊 Résumé: {report['dataset_summary']['total_planets']} planètes analysées")
     print(
-        f"🏡 {report['dataset']['habitable_planets']} planètes potentiellement habitables"
+        f"🎯 {report['dataset_summary']['colonizable_planets']} planètes colonisables identifiées"
     )
-    print(f"🚨 {report['anomalies']['count']} anomalies détectées")
+    print(
+        f"💧 {report['dataset_summary']['water_bearing_planets']} planètes avec eau détectées"
+    )
+    print(f"🚨 {report['anomalies_detected']} anomalies trouvées")
+
+    return report
 
 
 def main():
     """
-    Fonction principale de démonstration
+    Fonction principale de démonstration des analyses
     """
-    print("🔬 ANALYSE AVANCÉE DES DÉCOUVERTES DE PLANÈTES")
-    print("Version de démonstration locale")
-    print("=" * 60)
+    print("🔬 DÉMONSTRATION DES ANALYSES PLANÉTAIRES")
+    print(
+        "Structure CSV: Name, Num_Moons, Minerals, Gravity, Sunlight_Hours, Temperature, Rotation_Time, Water_Presence, Colonisable"
+    )
+    print("=" * 80)
 
-    # 1. Création du dataset
-    df = create_sample_dataset()
-    print(f"📊 Dataset créé avec {len(df)} planètes")
+    try:
+        # 1. Création/chargement du dataset
+        df = create_sample_dataset()
+        print(f"📊 Dataset créé avec {len(df)} planètes d'exemple")
 
-    # 2. Statistiques de base
-    stats = calculate_statistics(df)
+        # 2. Statistiques de base
+        stats = calculate_statistics(df)
 
-    # 3. Analyse des corrélations
-    correlations = analyze_correlations(df)
+        # 3. Analyse des corrélations
+        correlations = analyze_correlations(df)
 
-    # 4. Clustering
-    df = perform_clustering(df)
+        # 4. Clustering
+        clusters = perform_clustering(df)
 
-    # 5. Modèle d'IA
-    model = train_habitability_model(df)
+        # 5. Calcul des scores de colonisation
+        df_with_scores = calculate_colonization_scores(df)
 
-    # 6. Détection d'anomalies
-    anomalies = detect_anomalies(df)
+        # 6. Entraînement du modèle ML
+        model, feature_importance = train_colonisability_model(df)
 
-    # 7. Rapport final
-    generate_report(df, stats, correlations, model, anomalies)
+        # 7. Détection d'anomalies
+        anomalies = detect_anomalies(df)
 
-    print("\n🌐 INTERFACES DISPONIBLES:")
-    print("  - API Flask: http://localhost:5001")
-    print("  - Kafka Topics: http://localhost:9092")
+        # 8. Génération du rapport
+        report = generate_report(df_with_scores, stats, correlations, model, anomalies)
 
-    print("\n🚀 PROCHAINES ÉTAPES:")
-    print("  - Démarrer les services Spark complets")
-    print("  - Traitement streaming en temps réel")
-    print("  - Stockage HDFS et Hive")
+        print("\n✅ ANALYSE COMPLÈTE TERMINÉE")
+        print("🎯 Toutes les méthodes d'analyse ont été démontrées avec succès")
+        print("📁 Rapport détaillé sauvegardé dans /tmp/")
+
+    except Exception as e:
+        print(f"❌ Erreur lors de l'analyse: {e}")
+        import traceback
+
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
