@@ -43,443 +43,100 @@ def create_spark_session():
 def create_enhanced_dataset(spark):
     """
     Crée un dataset enrichi avec plus d'exemples pour l'entraînement
+    Utilise la nouvelle structure: Name, Num_Moons, Minerals, Gravity, Sunlight_Hours, Temperature, Rotation_Time, Water_Presence, Colonisable
     """
-    # Dataset étendu avec des planètes connues et leurs caractéristiques d'habitabilité
+    # Dataset étendu avec des planètes et leurs caractéristiques d'habitabilité
     enhanced_data = [
-        # Planètes habitables confirmées/potentielles
+        # Planètes habitables/colonisables
+        ("Kepler-442b", 0, 45, 0.89, 12.5, -40.0, 112.3, 0, 1),
+        ("Kepler-452b", 1, 78, 1.2, 16.8, 5.0, 385.0, 0, 1),
+        ("HD_40307g", 2, 89, 1.8, 18.2, 15.0, 197.8, 1, 1),
+        ("Proxima_Centauri_b", 0, 23, 1.1, 11.0, -39.0, 11.2, 0, 1),
+        ("TRAPPIST-1e", 0, 34, 0.92, 8.5, -22.0, 6.1, 1, 1),
+        ("Gliese_667Cc", 0, 56, 1.5, 13.5, -3.0, 28.1, 1, 1),
+        ("K2-18b", 0, 67, 2.3, 20.1, -23.0, 33.0, 1, 1),
+        ("TOI-715b", 0, 45, 1.55, 15.2, 15.0, 19.3, 0, 1),
+        ("LP_890-9c", 0, 38, 1.4, 12.8, -25.0, 8.8, 0, 1),
+        ("GJ_357d", 0, 52, 1.7, 17.3, -53.0, 55.7, 0, 1),
+        ("Ocean_World_1", 3, 67, 1.3, 16.8, 8.0, 78.2, 1, 1),
+        ("Kepler-1649c", 0, 41, 1.06, 10.5, -39.0, 19.5, 0, 1),
+        ("TOI-175b", 0, 73, 1.73, 18.6, 8.0, 25.6, 0, 1),
+        ("LHS_1140b", 0, 58, 1.4, 14.2, -53.0, 24.7, 0, 1),
+        # Planètes tempérées mais non habitables (facteurs défavorables)
+        ("Planet_18329", 5, 59, 1.98, 5.8, 28.4, 56.8, 0, 0),
+        ("Planet_28900", 8, 672, 1.39, 14.7, 27.5, 51.0, 0, 0),
+        ("Desert_Planet_1", 2, 890, 2.1, 18.5, 85.0, 45.6, 0, 0),
+        ("Rocky_Planet_1", 1, 423, 1.9, 14.2, 120.0, 89.4, 0, 0),
+        # Planètes trop chaudes
+        ("Hot_Jupiter_1", 15, 12, 0.8, 24.0, 1200.0, 3.2, 0, 0),
+        ("Venus_Like_1", 0, 234, 0.9, 22.3, 462.0, 243.0, 0, 0),
+        ("Volcanic_Planet_1", 0, 789, 2.8, 19.6, 450.0, 156.7, 0, 0),
+        ("Mercury_Like_1", 0, 156, 0.38, 23.8, 427.0, 58.6, 0, 0),
+        ("Lava_World_1", 2, 445, 1.2, 21.4, 800.0, 12.3, 0, 0),
+        # Planètes trop froides
+        ("Ice_Giant_1", 25, 234, 3.8, 2.1, -180.0, 4500.0, 1, 0),
+        ("Frozen_Planet_1", 4, 123, 1.1, 3.2, -200.0, 1200.0, 1, 0),
+        ("Pluto_Like_1", 5, 67, 0.66, 1.8, -229.0, 6.4, 1, 0),
+        ("Europa_Like_1", 0, 89, 1.3, 0.5, -160.0, 3.6, 1, 0),
+        ("Titan_Like_1", 0, 78, 1.4, 0.8, -179.0, 15.9, 1, 0),
+        # Géantes gazeuses (non habitables)
+        ("Gas_Giant_1", 42, 156, 0.6, 22.3, -120.0, 2890.0, 0, 0),
+        ("Jupiter_Like_1", 79, 89, 2.36, 20.1, -110.0, 4333.0, 0, 0),
+        ("Saturn_Like_1", 83, 123, 0.69, 18.7, -140.0, 10747.0, 0, 0),
+        ("Neptune_Like_1", 14, 234, 1.14, 5.4, -200.0, 60182.0, 0, 0),
+        ("Uranus_Like_1", 27, 167, 0.89, 4.2, -195.0, 30589.0, 0, 0),
+        # Planètes avec conditions extrêmes
+        ("High_Radiation_1", 2, 345, 1.5, 25.6, 45.0, 89.2, 0, 0),
+        ("No_Atmosphere_1", 0, 234, 2.1, 14.8, 200.0, 176.4, 0, 0),
+        ("Tidally_Locked_1", 0, 123, 1.2, 24.0, -150.0, 12.4, 0, 0),
+        ("Super_Earth_Heavy_1", 8, 567, 4.2, 16.3, 35.0, 234.7, 1, 0),
+        ("Mini_Neptune_1", 12, 78, 0.8, 12.8, -45.0, 456.8, 0, 0),
+        # Planètes potentiellement habitables mais avec défauts
         (
-            "planet-1",
-            "Kepler-442b",
-            "Equipe Kepler",
-            "2015-01-06",
-            2.34,
-            1.34,
-            1206.0,
-            "super-terre",
-            "confirmée",
-            "inconnue",
-            -40.0,
-            112.3,
-            0,
-            "inconnue",
+            "Planet_56161",
+            3,
+            764,
+            2.53,
+            22.9,
+            63.4,
+            43.0,
             1,
-        ),
+            0,
+        ),  # Trop de minéraux, trop chaud
+        ("Heavy_World_1", 6, 234, 3.5, 15.6, 12.0, 67.8, 1, 0),  # Gravité trop forte
+        ("Windy_Planet_1", 1, 123, 1.1, 28.9, 18.0, 8.9, 1, 0),  # Trop de soleil
         (
-            "planet-2",
-            "Kepler-452b",
-            "Mission Kepler",
-            "2015-07-23",
-            5.0,
-            1.6,
-            1400.0,
-            "super-terre",
-            "confirmée",
-            "dense",
-            5.0,
-            385.0,
+            "Resource_Poor_1",
+            0,
+            12,
+            0.95,
+            14.2,
+            22.0,
+            45.6,
             1,
-            "inconnue",
-            1,
-        ),
-        (
-            "planet-3",
-            "HD 40307g",
-            "Dr. Mikko Tuomi",
-            "2012-11-07",
-            7.1,
-            1.8,
-            42.0,
-            "super-terre",
-            "confirmée",
-            "dense",
-            15.0,
-            197.8,
-            2,
-            "oui",
-            1,
-        ),
-        (
-            "planet-4",
-            "Proxima Centauri b",
-            "Guillem Anglada-Escudé",
-            "2016-08-24",
-            1.17,
-            1.1,
-            4.24,
-            "terrestre",
-            "confirmée",
-            "mince",
-            -39.0,
-            11.2,
             0,
-            "inconnue",
-            1,
-        ),
-        (
-            "planet-5",
-            "TRAPPIST-1e",
-            "Michaël Gillon",
-            "2017-02-22",
-            0.772,
-            0.918,
-            39.0,
-            "terrestre",
-            "confirmée",
-            "mince",
-            -22.0,
-            6.1,
-            0,
-            "oui",
-            1,
-        ),
-        (
-            "planet-6",
-            "Gliese 667Cc",
-            "ESO",
-            "2011-11-21",
-            3.7,
-            1.5,
-            23.6,
-            "super-terre",
-            "confirmée",
-            "dense",
-            -3.0,
-            28.1,
-            0,
-            "oui",
-            1,
-        ),
-        (
-            "planet-7",
-            "K2-18b",
-            "Ryan Cloutier",
-            "2015-12-07",
-            8.6,
-            2.3,
-            124.0,
-            "super-terre",
-            "confirmée",
-            "hydrogène",
-            -23.0,
-            33.0,
-            0,
-            "oui",
-            1,
-        ),
-        (
-            "planet-8",
-            "TOI-715b",
-            "Georgina Dransfield",
-            "2024-01-31",
-            3.02,
-            1.55,
-            137.0,
-            "super-terre",
-            "confirmée",
-            "mince",
-            15.0,
-            19.3,
-            0,
-            "inconnue",
-            1,
-        ),
-        (
-            "planet-9",
-            "LP 890-9c",
-            "Laetitia Delrez",
-            "2022-09-05",
-            2.6,
-            1.4,
-            105.0,
-            "super-terre",
-            "confirmée",
-            "mince",
-            -25.0,
-            8.8,
-            0,
-            "inconnue",
-            1,
-        ),
-        (
-            "planet-10",
-            "GJ 357d",
-            "Rafael Luque",
-            "2019-07-31",
-            6.1,
-            1.7,
-            31.0,
-            "super-terre",
-            "confirmée",
-            "dense",
-            -53.0,
-            55.7,
-            0,
-            "inconnue",
-            1,
-        ),
-        # Planètes potentiellement habitables
-        (
-            "planet-11",
-            "Kepler-1649c",
-            "Equipe Kepler",
-            "2020-04-15",
-            1.06,
-            1.06,
-            300.0,
-            "terrestre",
-            "confirmée",
-            "mince",
-            -39.0,
-            19.5,
-            0,
-            "inconnue",
-            1,
-        ),
-        (
-            "planet-12",
-            "TOI-175b",
-            "NASA TESS",
-            "2023-01-11",
-            4.25,
-            1.73,
-            120.0,
-            "super-terre",
-            "confirmée",
-            "dense",
-            8.0,
-            25.6,
-            0,
-            "inconnue",
-            1,
-        ),
-        (
-            "planet-13",
-            "LHS 1140b",
-            "MEarth Project",
-            "2017-04-19",
-            6.6,
-            1.4,
-            40.0,
-            "super-terre",
-            "confirmée",
-            "mince",
-            -53.0,
-            24.7,
-            0,
-            "inconnue",
-            1,
-        ),
-        # Planètes non habitables (trop chaudes)
-        (
-            "planet-14",
-            "HD 149026b",
-            "NASA",
-            "2005-07-01",
-            114.0,
-            0.725,
-            256.0,
-            "géante gazeuse",
-            "confirmée",
-            "hydrogène",
-            2000.0,
-            2.9,
-            0,
-            "non",
-            0,
-        ),
-        (
-            "planet-15",
-            "WASP-12b",
-            "SuperWASP",
-            "2008-04-01",
-            445.0,
-            1.79,
-            871.0,
-            "géante gazeuse",
-            "confirmée",
-            "hydrogène",
-            2516.0,
-            1.1,
-            0,
-            "non",
-            0,
-        ),
-        (
-            "planet-16",
-            "Kepler-7b",
-            "Equipe Kepler",
-            "2010-01-04",
-            150.0,
-            1.48,
-            3000.0,
-            "géante gazeuse",
-            "confirmée",
-            "hydrogène",
-            1540.0,
-            4.9,
-            0,
-            "non",
-            0,
-        ),
-        (
-            "planet-17",
-            "CoRoT-7b",
-            "CoRoT",
-            "2009-02-03",
-            4.8,
-            1.58,
-            489.0,
-            "super-terre",
-            "confirmée",
-            "aucune",
-            1800.0,
-            0.85,
-            0,
-            "non",
-            0,
-        ),
-        # Planètes non habitables (trop froides)
-        (
-            "planet-18",
-            "OGLE-2005-BLG-390Lb",
-            "OGLE",
-            "2006-01-25",
-            5.5,
-            1.5,
-            21500.0,
-            "super-terre",
-            "confirmée",
-            "glacée",
-            -223.0,
-            3500.0,
-            0,
-            "glacée",
-            0,
-        ),
-        (
-            "planet-19",
-            "Kepler-1708b",
-            "Equipe Kepler",
-            "2022-01-13",
-            4.6,
-            2.6,
-            5500.0,
-            "géante gazeuse",
-            "confirmée",
-            "hydrogène",
-            -183.0,
-            737.0,
-            1,
-            "non",
-            0,
-        ),
-        (
-            "planet-20",
-            "PSR B1257+12 A",
-            "Aleksander Wolszczan",
-            "1992-01-09",
-            0.02,
-            0.5,
-            2300.0,
-            "terrestre",
-            "confirmée",
-            "aucune",
-            -213.0,
-            25.3,
-            0,
-            "non",
-            0,
-        ),
-        # Planètes dans des systèmes binaires (compliqué pour l'habitabilité)
-        (
-            "planet-21",
-            "Kepler-16b",
-            "Equipe Kepler",
-            "2011-09-15",
-            105.0,
-            0.75,
-            245.0,
-            "géante gazeuse",
-            "confirmée",
-            "hydrogène",
-            -101.0,
-            229.0,
-            0,
-            "non",
-            0,
-        ),
-        (
-            "planet-22",
-            "Alpha Centauri Bb",
-            "ESO",
-            "2012-10-17",
-            1.13,
-            1.04,
-            4.37,
-            "terrestre",
-            "non confirmée",
-            "inconnue",
-            1200.0,
-            3.2,
-            0,
-            "non",
-            0,
-        ),
-        # Naines brunes et objets exotiques
-        (
-            "planet-23",
-            "2M1207b",
-            "ESO",
-            "2004-05-01",
-            25.0,
-            1.5,
-            230.0,
-            "naine",
-            "confirmée",
-            "méthane",
-            -173.0,
-            2900.0,
-            0,
-            "non",
-            0,
-        ),
-        (
-            "planet-24",
-            "PSR B1620-26 b",
-            "Steinn Sigurdsson",
-            "2003-07-10",
-            2.5,
-            2.3,
-            12400.0,
-            "géante gazeuse",
-            "confirmée",
-            "hydrogène",
-            -220.0,
-            36500.0,
-            0,
-            "non",
-            0,
-        ),
+        ),  # Très peu de minéraux
+        ("Fast_Rotation_1", 2, 89, 1.3, 16.4, 15.0, 2.3, 1, 0),  # Rotation trop rapide
+        # Planètes de référence (Terre-like habitables)
+        ("Earth_Like_1", 1, 234, 1.0, 12.0, 15.0, 24.0, 1, 1),
+        ("Earth_Like_2", 2, 198, 0.98, 11.8, 18.0, 23.9, 1, 1),
+        ("Earth_Like_3", 1, 267, 1.02, 12.3, 12.0, 24.1, 1, 1),
+        ("Perfect_World_1", 2, 156, 0.95, 13.2, 22.0, 26.8, 1, 1),
+        ("Garden_World_1", 3, 189, 1.05, 11.5, 19.0, 22.4, 1, 1),
     ]
 
     schema = StructType(
         [
-            StructField("id", StringType(), True),
-            StructField("nom", StringType(), True),
-            StructField("decouvreur", StringType(), True),
-            StructField("date_decouverte", StringType(), True),
-            StructField("masse", DoubleType(), True),
-            StructField("rayon", DoubleType(), True),
-            StructField("distance", DoubleType(), True),
-            StructField("type", StringType(), True),
-            StructField("statut", StringType(), True),
-            StructField("atmosphere", StringType(), True),
-            StructField("temperature_moyenne", DoubleType(), True),
-            StructField("periode_orbitale", DoubleType(), True),
-            StructField("nombre_satellites", IntegerType(), True),
-            StructField("presence_eau", StringType(), True),
+            StructField("Name", StringType(), True),
+            StructField("Num_Moons", IntegerType(), True),
+            StructField("Minerals", IntegerType(), True),
+            StructField("Gravity", DoubleType(), True),
+            StructField("Sunlight_Hours", DoubleType(), True),
+            StructField("Temperature", DoubleType(), True),
+            StructField("Rotation_Time", DoubleType(), True),
+            StructField("Water_Presence", IntegerType(), True),
             StructField(
-                "habitable", IntegerType(), True
+                "Colonisable", IntegerType(), True
             ),  # 1 = habitable, 0 = non habitable
         ]
     )
@@ -495,31 +152,54 @@ def engineer_features(df):
     # Calcul de nouvelles features
     enhanced_df = (
         df.withColumn(
-            "zone_habitable",
+            "temperature_zone",
+            when((col("Temperature") >= -50) & (col("Temperature") <= 50), 1).otherwise(
+                0
+            ),
+        )
+        .withColumn(
+            "earth_like_gravity",
+            when((col("Gravity") >= 0.5) & (col("Gravity") <= 2.0), 1).otherwise(0),
+        )
+        .withColumn(
+            "optimal_sunlight",
             when(
-                (col("temperature_moyenne") >= -50)
-                & (col("temperature_moyenne") <= 50),
-                1,
+                (col("Sunlight_Hours") >= 8) & (col("Sunlight_Hours") <= 16), 1
             ).otherwise(0),
         )
         .withColumn(
-            "taille_terrestre",
-            when((col("rayon") >= 0.5) & (col("rayon") <= 2.0), 1).otherwise(0),
+            "moderate_rotation",
+            when(
+                (col("Rotation_Time") >= 12) & (col("Rotation_Time") <= 48), 1
+            ).otherwise(0),
         )
         .withColumn(
-            "masse_terrestre",
-            when((col("masse") >= 0.1) & (col("masse") <= 10.0), 1).otherwise(0),
+            "mineral_richness",
+            when(col("Minerals") > 200, 1).otherwise(0),
         )
         .withColumn(
-            "distance_log",
-            log10(col("distance") + 1),  # Log de la distance pour réduire l'asymétrie
+            "moon_stability",
+            when((col("Num_Moons") >= 1) & (col("Num_Moons") <= 5), 1).otherwise(0),
         )
-        .withColumn("periode_log", log10(col("periode_orbitale") + 1))
         .withColumn(
-            "densite_approx",
-            col("masse") / pow(col("rayon"), 3),  # Densité approximative
+            "temperature_squared",
+            col("Temperature") * col("Temperature"),  # Feature non-linéaire
         )
-        .withColumn("eau_binaire", when(col("presence_eau") == "oui", 1).otherwise(0))
+        .withColumn(
+            "gravity_sunlight_interaction",
+            col("Gravity") * col("Sunlight_Hours"),  # Interaction entre features
+        )
+        .withColumn(
+            "habitability_score",
+            (
+                col("temperature_zone")
+                + col("earth_like_gravity")
+                + col("optimal_sunlight")
+                + col("Water_Presence")
+                + col("moderate_rotation")
+            )
+            / 5.0,  # Score d'habitabilité composite
+        )
     )
 
     return enhanced_df
@@ -529,39 +209,38 @@ def prepare_ml_pipeline(df):
     """
     Prépare le pipeline de machine learning
     """
-    # Encodage des variables catégorielles
-    type_indexer = StringIndexer(inputCol="type", outputCol="type_indexed")
-    atmosphere_indexer = StringIndexer(
-        inputCol="atmosphere", outputCol="atmosphere_indexed"
-    )
-    statut_indexer = StringIndexer(inputCol="statut", outputCol="statut_indexed")
-
-    # Features numériques
-    numeric_features = [
-        "masse",
-        "rayon",
-        "distance_log",
-        "temperature_moyenne",
-        "periode_log",
-        "nombre_satellites",
-        "densite_approx",
-        "zone_habitable",
-        "taille_terrestre",
-        "masse_terrestre",
-        "eau_binaire",
+    # Features numériques originales
+    original_features = [
+        "Num_Moons",
+        "Minerals",
+        "Gravity",
+        "Sunlight_Hours",
+        "Temperature",
+        "Rotation_Time",
+        "Water_Presence",
     ]
 
-    # Features catégorielles encodées
-    categorical_features = ["type_indexed", "atmosphere_indexed", "statut_indexed"]
+    # Features engineered
+    engineered_features = [
+        "temperature_zone",
+        "earth_like_gravity",
+        "optimal_sunlight",
+        "moderate_rotation",
+        "mineral_richness",
+        "moon_stability",
+        "temperature_squared",
+        "gravity_sunlight_interaction",
+        "habitability_score",
+    ]
 
     # Assemblage de toutes les features
-    all_features = numeric_features + categorical_features
+    all_features = original_features + engineered_features
     assembler = VectorAssembler(inputCols=all_features, outputCol="features")
 
     # Normalisation
     scaler = StandardScaler(inputCol="features", outputCol="scaledFeatures")
 
-    return type_indexer, atmosphere_indexer, statut_indexer, assembler, scaler
+    return assembler, scaler, all_features
 
 
 def train_models(df):
@@ -576,12 +255,19 @@ def train_models(df):
 
     # Affichage des statistiques de classe
     print("📊 Distribution des classes:")
-    df_features.groupBy("habitable").count().show()
+    df_features.groupBy("Colonisable").count().show()
+
+    print("📈 Statistiques des features engineered:")
+    df_features.select(
+        "temperature_zone",
+        "earth_like_gravity",
+        "optimal_sunlight",
+        "moderate_rotation",
+        "habitability_score",
+    ).describe().show()
 
     # Préparation du pipeline
-    type_indexer, atmosphere_indexer, statut_indexer, assembler, scaler = (
-        prepare_ml_pipeline(df_features)
-    )
+    assembler, scaler, feature_names = prepare_ml_pipeline(df_features)
 
     # Division train/test
     train_df, test_df = df_features.randomSplit([0.8, 0.2], seed=42)
@@ -592,13 +278,24 @@ def train_models(df):
     # Modèles à tester
     models = {
         "RandomForest": RandomForestClassifier(
-            featuresCol="scaledFeatures", labelCol="habitable", numTrees=50, seed=42
+            featuresCol="scaledFeatures",
+            labelCol="Colonisable",
+            numTrees=100,
+            maxDepth=10,
+            seed=42,
         ),
         "GradientBoosting": GBTClassifier(
-            featuresCol="scaledFeatures", labelCol="habitable", maxIter=20, seed=42
+            featuresCol="scaledFeatures",
+            labelCol="Colonisable",
+            maxIter=50,
+            maxDepth=8,
+            seed=42,
         ),
         "LogisticRegression": LogisticRegression(
-            featuresCol="scaledFeatures", labelCol="habitable", maxIter=100
+            featuresCol="scaledFeatures",
+            labelCol="Colonisable",
+            maxIter=200,
+            regParam=0.01,
         ),
     }
 
@@ -610,28 +307,19 @@ def train_models(df):
     # Évaluateurs
     binary_evaluator = BinaryClassificationEvaluator(
         rawPredictionCol="rawPrediction",
-        labelCol="habitable",
+        labelCol="Colonisable",
         metricName="areaUnderROC",
     )
 
     multi_evaluator = MulticlassClassificationEvaluator(
-        predictionCol="prediction", labelCol="habitable", metricName="accuracy"
+        predictionCol="prediction", labelCol="Colonisable", metricName="accuracy"
     )
 
     for model_name, model in models.items():
         print(f"\n🔧 Entraînement du modèle: {model_name}")
 
         # Pipeline complet
-        pipeline = Pipeline(
-            stages=[
-                type_indexer,
-                atmosphere_indexer,
-                statut_indexer,
-                assembler,
-                scaler,
-                model,
-            ]
-        )
+        pipeline = Pipeline(stages=[assembler, scaler, model])
 
         # Entraînement
         model_fitted = pipeline.fit(train_df)
@@ -643,14 +331,31 @@ def train_models(df):
         auc_score = binary_evaluator.evaluate(predictions)
         accuracy_score = multi_evaluator.evaluate(predictions)
 
+        # Calcul de métriques supplémentaires
+        f1_evaluator = MulticlassClassificationEvaluator(
+            predictionCol="prediction", labelCol="Colonisable", metricName="f1"
+        )
+        f1_score = f1_evaluator.evaluate(predictions)
+
+        precision_evaluator = MulticlassClassificationEvaluator(
+            predictionCol="prediction",
+            labelCol="Colonisable",
+            metricName="weightedPrecision",
+        )
+        precision_score = precision_evaluator.evaluate(predictions)
+
         results[model_name] = {
             "model": model_fitted,
             "auc": auc_score,
             "accuracy": accuracy_score,
+            "f1": f1_score,
+            "precision": precision_score,
         }
 
         print(f"  📈 AUC: {auc_score:.3f}")
         print(f"  🎯 Accuracy: {accuracy_score:.3f}")
+        print(f"  📊 F1-Score: {f1_score:.3f}")
+        print(f"  🔍 Precision: {precision_score:.3f}")
 
         if auc_score > best_score:
             best_score = auc_score
@@ -659,7 +364,7 @@ def train_models(df):
 
     print(f"\n🏆 Meilleur modèle: {best_name} (AUC: {best_score:.3f})")
 
-    return best_model, results, test_df
+    return best_model, results, test_df, feature_names
 
 
 def analyze_feature_importance(model, feature_names):
@@ -705,18 +410,14 @@ def predict_habitability(model, new_planets_data, spark):
     # Création du DataFrame pour les nouvelles planètes
     schema = StructType(
         [
-            StructField("id", StringType(), True),
-            StructField("nom", StringType(), True),
-            StructField("masse", DoubleType(), True),
-            StructField("rayon", DoubleType(), True),
-            StructField("distance", DoubleType(), True),
-            StructField("type", StringType(), True),
-            StructField("atmosphere", StringType(), True),
-            StructField("statut", StringType(), True),
-            StructField("temperature_moyenne", DoubleType(), True),
-            StructField("periode_orbitale", DoubleType(), True),
-            StructField("nombre_satellites", IntegerType(), True),
-            StructField("presence_eau", StringType(), True),
+            StructField("Name", StringType(), True),
+            StructField("Num_Moons", IntegerType(), True),
+            StructField("Minerals", IntegerType(), True),
+            StructField("Gravity", DoubleType(), True),
+            StructField("Sunlight_Hours", DoubleType(), True),
+            StructField("Temperature", DoubleType(), True),
+            StructField("Rotation_Time", DoubleType(), True),
+            StructField("Water_Presence", IntegerType(), True),
         ]
     )
 
@@ -731,10 +432,84 @@ def predict_habitability(model, new_planets_data, spark):
     # Affichage des résultats
     print("🌍 Prédictions d'habitabilité:")
     predictions.select(
-        "nom", "masse", "rayon", "temperature_moyenne", "prediction", "probability"
+        "Name",
+        "Temperature",
+        "Gravity",
+        "Water_Presence",
+        "habitability_score",
+        "prediction",
+        "probability",
     ).show(truncate=False)
 
+    # Analyse des prédictions
+    habitable_count = predictions.filter(col("prediction") == 1).count()
+    total_count = predictions.count()
+
+    print(f"\n📊 Résumé des prédictions:")
+    print(f"  🌍 Planètes prédites habitables: {habitable_count}/{total_count}")
+    print(f"  📈 Pourcentage d'habitabilité: {(habitable_count/total_count)*100:.1f}%")
+
     return predictions
+
+
+def evaluate_model_robustness(model, df, spark):
+    """
+    Évalue la robustesse du modèle avec validation croisée
+    """
+    print("\n🔄 ÉVALUATION DE LA ROBUSTESSE DU MODÈLE")
+    print("=" * 50)
+
+    try:
+        # Préparation des données
+        df_features = engineer_features(df)
+        assembler, scaler, _ = prepare_ml_pipeline(df_features)
+
+        # Création d'un modèle RandomForest pour la validation croisée
+        rf = RandomForestClassifier(
+            featuresCol="scaledFeatures", labelCol="Colonisable", numTrees=50, seed=42
+        )
+
+        pipeline = Pipeline(stages=[assembler, scaler, rf])
+
+        # Grille de paramètres
+        paramGrid = (
+            ParamGridBuilder()
+            .addGrid(rf.numTrees, [30, 50, 100])
+            .addGrid(rf.maxDepth, [5, 8, 10])
+            .build()
+        )
+
+        # Validation croisée
+        evaluator = BinaryClassificationEvaluator(
+            labelCol="Colonisable", metricName="areaUnderROC"
+        )
+
+        cv = CrossValidator(
+            estimator=pipeline,
+            estimatorParamMaps=paramGrid,
+            evaluator=evaluator,
+            numFolds=3,
+            seed=42,
+        )
+
+        # Entraînement avec validation croisée
+        cv_model = cv.fit(df_features)
+
+        # Meilleurs paramètres
+        best_params = cv_model.bestModel.stages[-1].extractParamMap()
+        print("🏆 Meilleurs paramètres trouvés:")
+        for param, value in best_params.items():
+            print(f"  {param.name}: {value}")
+
+        # Score de validation croisée
+        avg_score = max(cv_model.avgMetrics)
+        print(f"\n📊 Score moyen de validation croisée: {avg_score:.3f}")
+
+        return cv_model
+
+    except Exception as e:
+        print(f"❌ Erreur lors de la validation croisée: {e}")
+        return None
 
 
 def save_model_and_results(model, results, hdfs_namenode):
@@ -755,7 +530,12 @@ def save_model_and_results(model, results, hdfs_namenode):
             import json
 
             metrics = {
-                name: {"auc": result["auc"], "accuracy": result["accuracy"]}
+                name: {
+                    "auc": result["auc"],
+                    "accuracy": result["accuracy"],
+                    "f1": result["f1"],
+                    "precision": result["precision"],
+                }
                 for name, result in results.items()
             }
             json.dump(metrics, f, indent=2)
@@ -783,97 +563,44 @@ def main():
         df = create_enhanced_dataset(spark)
         print(f"\n📊 Dataset créé avec {df.count()} planètes")
 
+        # Aperçu du dataset
+        print("\n🔍 Aperçu du dataset:")
+        df.show(5)
+
         # 2. Entraînement des modèles
-        best_model, results, test_df = train_models(df)
+        best_model, results, test_df, feature_names = train_models(df)
 
         # 3. Analyse de l'importance des features
-        feature_names = [
-            "masse",
-            "rayon",
-            "distance_log",
-            "temperature_moyenne",
-            "periode_log",
-            "nombre_satellites",
-            "densite_approx",
-            "zone_habitable",
-            "taille_terrestre",
-            "masse_terrestre",
-            "eau_binaire",
-            "type_indexed",
-            "atmosphere_indexed",
-            "statut_indexed",
-        ]
         feature_importance = analyze_feature_importance(best_model, feature_names)
 
-        # 4. Exemples de prédiction sur de nouvelles planètes
+        # 4. Évaluation de la robustesse
+        cv_model = evaluate_model_robustness(best_model, df, spark)
+
+        # 5. Exemples de prédiction sur de nouvelles planètes
         new_planets = [
-            (
-                "new-1",
-                "Planète X1",
-                1.5,
-                1.2,
-                50.0,
-                "terrestre",
-                "mince",
-                "confirmée",
-                10.0,
-                30.0,
-                1,
-                "inconnue",
-            ),
-            (
-                "new-2",
-                "Planète X2",
-                0.8,
-                0.9,
-                25.0,
-                "terrestre",
-                "mince",
-                "confirmée",
-                -10.0,
-                45.0,
-                0,
-                "oui",
-            ),
-            (
-                "new-3",
-                "Planète X3",
-                10.0,
-                3.0,
-                200.0,
-                "géante gazeuse",
-                "hydrogène",
-                "confirmée",
-                500.0,
-                100.0,
-                5,
-                "non",
-            ),
-            (
-                "new-4",
-                "Planète X4",
-                2.1,
-                1.4,
-                75.0,
-                "super-terre",
-                "dense",
-                "confirmée",
-                25.0,
-                60.0,
-                2,
-                "inconnue",
-            ),
+            ("Candidate_A", 1, 150, 1.2, 12.0, 18.0, 24.5, 1),  # Très prometteur
+            ("Candidate_B", 0, 80, 0.9, 10.5, -15.0, 28.3, 0),  # Moyennement prometteur
+            ("Candidate_C", 15, 30, 0.6, 22.0, -120.0, 2500.0, 0),  # Géante gazeuse
+            ("Candidate_D", 2, 250, 1.8, 14.8, 65.0, 45.2, 0),  # Trop chaud
+            ("Candidate_E", 3, 189, 1.05, 11.5, 19.0, 22.4, 1),  # Très prometteur
+            ("Hot_Desert", 0, 890, 2.1, 18.5, 150.0, 45.6, 0),  # Désert chaud
         ]
 
         predictions = predict_habitability(best_model, new_planets, spark)
 
-        # 5. Sauvegarde
+        # 6. Sauvegarde
         save_model_and_results(best_model, results, hdfs_namenode)
 
         print("\n✅ MODÈLE D'HABITABILITÉ COMPLÉTÉ")
         print(
             "🎯 Le modèle peut maintenant prédire l'habitabilité de nouvelles planètes!"
         )
+        print("\n📋 Facteurs clés identifiés pour l'habitabilité:")
+        print("  • Température dans la zone habitable (-50°C à 50°C)")
+        print("  • Gravité similaire à la Terre (0.5 à 2.0)")
+        print("  • Présence d'eau")
+        print("  • Heures de soleil modérées (8 à 16h)")
+        print("  • Rotation modérée (12 à 48h)")
 
     except Exception as e:
         print(f"❌ Erreur lors de l'entraînement du modèle: {e}")

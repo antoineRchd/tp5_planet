@@ -32,6 +32,7 @@ def create_spark_session():
 def load_planet_data(spark, hdfs_path=None):
     """
     Charge les données de planètes depuis HDFS ou depuis un fichier local
+    Utilise la nouvelle structure avec Name, Num_Moons, Minerals, etc.
     """
     if hdfs_path:
         try:
@@ -41,191 +42,246 @@ def load_planet_data(spark, hdfs_path=None):
         except Exception as e:
             print(f"⚠️ Erreur HDFS: {e}, utilisation des données de test")
 
-    # Données de test si HDFS n'est pas disponible
+    # Données de test avec la nouvelle structure
     test_data = [
         (
-            "planet-1",
+            "Planet_18329",
+            5,
+            59,
+            1.981602859469247,
+            5.8168191458771705,
+            28.381006239674264,
+            56.76091939405808,
+            0,
+            0,
+        ),
+        (
+            "Planet_28900",
+            8,
+            672,
+            1.3881504830806715,
+            14.715293728903166,
+            27.48564614824687,
+            51.0340563211323,
+            0,
+            0,
+        ),
+        (
+            "Planet_56161",
+            3,
+            764,
+            2.5308267251520093,
+            22.902523479273974,
+            63.39082702246432,
+            42.99324764351807,
+            1,
+            0,
+        ),
+        (
             "Kepler-442b",
-            "Equipe Kepler",
-            "2015-01-06",
-            2.34,
-            1.34,
-            1206.0,
-            "super-terre",
-            "confirmée",
-            "inconnue",
+            0,
+            45,
+            0.89,
+            12.5,
             -40.0,
             112.3,
             0,
-            "inconnue",
+            1,
         ),
         (
-            "planet-2",
             "Kepler-452b",
-            "Mission Kepler",
-            "2015-07-23",
-            5.0,
-            1.6,
-            1400.0,
-            "super-terre",
-            "confirmée",
-            "dense",
+            1,
+            78,
+            1.2,
+            16.8,
             5.0,
             385.0,
+            0,
             1,
-            "inconnue",
         ),
         (
-            "planet-3",
-            "HD 40307g",
-            "Dr. Mikko Tuomi",
-            "2012-11-07",
-            7.1,
+            "HD_40307g",
+            2,
+            89,
             1.8,
-            42.0,
-            "super-terre",
-            "confirmée",
-            "dense",
+            18.2,
             15.0,
             197.8,
-            2,
-            "oui",
+            1,
+            1,
         ),
         (
-            "planet-4",
-            "Proxima Centauri b",
-            "Guillem Anglada-Escudé",
-            "2016-08-24",
-            1.17,
+            "Proxima_Centauri_b",
+            0,
+            23,
             1.1,
-            4.24,
-            "terrestre",
-            "confirmée",
-            "mince",
+            11.0,
             -39.0,
             11.2,
             0,
-            "inconnue",
+            1,
         ),
         (
-            "planet-5",
             "TRAPPIST-1e",
-            "Michaël Gillon",
-            "2017-02-22",
-            0.772,
-            0.918,
-            39.0,
-            "terrestre",
-            "confirmée",
-            "mince",
+            0,
+            34,
+            0.92,
+            8.5,
             -22.0,
             6.1,
-            0,
-            "oui",
+            1,
+            1,
         ),
         (
-            "planet-6",
-            "Gliese 667Cc",
-            "ESO",
-            "2011-11-21",
-            3.7,
+            "Gliese_667Cc",
+            0,
+            56,
             1.5,
-            23.6,
-            "super-terre",
-            "confirmée",
-            "dense",
+            13.5,
             -3.0,
             28.1,
-            0,
-            "oui",
+            1,
+            1,
         ),
         (
-            "planet-7",
             "K2-18b",
-            "Ryan Cloutier",
-            "2015-12-07",
-            8.6,
+            0,
+            67,
             2.3,
-            124.0,
-            "super-terre",
-            "confirmée",
-            "hydrogène",
+            20.1,
             -23.0,
             33.0,
-            0,
-            "oui",
+            1,
+            1,
         ),
         (
-            "planet-8",
             "TOI-715b",
-            "Georgina Dransfield",
-            "2024-01-31",
-            3.02,
+            0,
+            45,
             1.55,
-            137.0,
-            "super-terre",
-            "confirmée",
-            "mince",
+            15.2,
             15.0,
             19.3,
             0,
-            "inconnue",
+            1,
         ),
         (
-            "planet-9",
-            "LP 890-9c",
-            "Laetitia Delrez",
-            "2022-09-05",
-            2.6,
+            "LP_890-9c",
+            0,
+            38,
             1.4,
-            105.0,
-            "super-terre",
-            "confirmée",
-            "mince",
+            12.8,
             -25.0,
             8.8,
             0,
-            "inconnue",
+            1,
         ),
         (
-            "planet-10",
-            "GJ 357d",
-            "Rafael Luque",
-            "2019-07-31",
-            6.1,
+            "GJ_357d",
+            0,
+            52,
             1.7,
-            31.0,
-            "super-terre",
-            "confirmée",
-            "dense",
+            17.3,
             -53.0,
             55.7,
             0,
-            "inconnue",
+            1,
+        ),
+        (
+            "Hot_Jupiter_1",
+            15,
+            12,
+            0.8,
+            24.0,
+            1200.0,
+            3.2,
+            0,
+            0,
+        ),
+        (
+            "Ice_Giant_1",
+            25,
+            234,
+            3.8,
+            2.1,
+            -180.0,
+            4500.0,
+            1,
+            0,
+        ),
+        (
+            "Desert_Planet_1",
+            2,
+            890,
+            2.1,
+            18.5,
+            85.0,
+            45.6,
+            0,
+            0,
+        ),
+        (
+            "Gas_Giant_1",
+            42,
+            156,
+            0.6,
+            22.3,
+            -120.0,
+            2890.0,
+            0,
+            0,
+        ),
+        (
+            "Rocky_Planet_1",
+            1,
+            423,
+            1.9,
+            14.2,
+            120.0,
+            89.4,
+            0,
+            0,
+        ),
+        (
+            "Ocean_World_1",
+            3,
+            67,
+            1.3,
+            16.8,
+            8.0,
+            78.2,
+            1,
+            1,
+        ),
+        (
+            "Volcanic_Planet_1",
+            0,
+            789,
+            2.8,
+            19.6,
+            450.0,
+            156.7,
+            0,
+            0,
         ),
     ]
 
     schema = StructType(
         [
-            StructField("id", StringType(), True),
-            StructField("nom", StringType(), True),
-            StructField("decouvreur", StringType(), True),
-            StructField("date_decouverte", StringType(), True),
-            StructField("masse", DoubleType(), True),
-            StructField("rayon", DoubleType(), True),
-            StructField("distance", DoubleType(), True),
-            StructField("type", StringType(), True),
-            StructField("statut", StringType(), True),
-            StructField("atmosphere", StringType(), True),
-            StructField("temperature_moyenne", DoubleType(), True),
-            StructField("periode_orbitale", DoubleType(), True),
-            StructField("nombre_satellites", IntegerType(), True),
-            StructField("presence_eau", StringType(), True),
+            StructField("Name", StringType(), True),
+            StructField("Num_Moons", IntegerType(), True),
+            StructField("Minerals", IntegerType(), True),
+            StructField("Gravity", DoubleType(), True),
+            StructField("Sunlight_Hours", DoubleType(), True),
+            StructField("Temperature", DoubleType(), True),
+            StructField("Rotation_Time", DoubleType(), True),
+            StructField("Water_Presence", IntegerType(), True),
+            StructField("Colonisable", IntegerType(), True),
         ]
     )
 
     df = spark.createDataFrame(test_data, schema)
-    print("✅ Données de test créées")
+    print("✅ Données de test créées avec la nouvelle structure")
     return df
 
 
@@ -238,27 +294,35 @@ def calculate_basic_statistics(df):
 
     # Statistiques numériques
     numeric_cols = [
-        "masse",
-        "rayon",
-        "distance",
-        "temperature_moyenne",
-        "periode_orbitale",
-        "nombre_satellites",
+        "Num_Moons",
+        "Minerals",
+        "Gravity",
+        "Sunlight_Hours",
+        "Temperature",
+        "Rotation_Time",
     ]
     stats_df = df.select(numeric_cols).describe()
     stats_df.show()
 
-    # Distribution par type de planète
-    print("\n🌍 Distribution par type de planète:")
-    df.groupBy("type").count().orderBy(desc("count")).show()
-
-    # Distribution par statut
-    print("\n✅ Distribution par statut:")
-    df.groupBy("statut").count().orderBy(desc("count")).show()
-
     # Distribution par présence d'eau
     print("\n💧 Distribution par présence d'eau:")
-    df.groupBy("presence_eau").count().orderBy(desc("count")).show()
+    df.groupBy("Water_Presence").count().orderBy(desc("count")).show()
+
+    # Distribution par colonisabilité
+    print("\n🏠 Distribution par colonisabilité:")
+    df.groupBy("Colonisable").count().orderBy(desc("count")).show()
+
+    # Analyse des zones de température
+    print("\n🌡️ Zones de température:")
+    temp_zones = df.withColumn(
+        "Temperature_Zone",
+        when(col("Temperature") < -50, "Très froid")
+        .when((col("Temperature") >= -50) & (col("Temperature") < 0), "Froid")
+        .when((col("Temperature") >= 0) & (col("Temperature") < 50), "Tempéré")
+        .when((col("Temperature") >= 50) & (col("Temperature") < 100), "Chaud")
+        .otherwise("Très chaud"),
+    )
+    temp_zones.groupBy("Temperature_Zone").count().orderBy(desc("count")).show()
 
     return stats_df
 
@@ -272,12 +336,14 @@ def calculate_correlations(df):
 
     # Préparation des données numériques
     numeric_cols = [
-        "masse",
-        "rayon",
-        "distance",
-        "temperature_moyenne",
-        "periode_orbitale",
-        "nombre_satellites",
+        "Num_Moons",
+        "Minerals",
+        "Gravity",
+        "Sunlight_Hours",
+        "Temperature",
+        "Rotation_Time",
+        "Water_Presence",
+        "Colonisable",
     ]
 
     # Création d'un vecteur de features
@@ -289,12 +355,12 @@ def calculate_correlations(df):
     correlation_array = correlation_matrix[0].toArray()
 
     # Affichage des corrélations importantes
-    print("\n🔍 Corrélations significatives (|r| > 0.5):")
+    print("\n🔍 Corrélations significatives (|r| > 0.3):")
     for i, col1 in enumerate(numeric_cols):
         for j, col2 in enumerate(numeric_cols):
             if i < j:  # Éviter les doublons
                 corr_value = correlation_array[i][j]
-                if abs(corr_value) > 0.5:
+                if abs(corr_value) > 0.3:
                     print(f"  {col1} ↔ {col2}: {corr_value:.3f}")
 
     return correlation_array, numeric_cols
@@ -308,28 +374,46 @@ def analyze_water_relationships(df):
     print("=" * 60)
 
     # Statistiques par présence d'eau
-    water_stats = df.groupBy("presence_eau").agg(
-        avg("distance").alias("distance_moyenne"),
-        avg("temperature_moyenne").alias("temp_moyenne"),
-        avg("masse").alias("masse_moyenne"),
-        avg("rayon").alias("rayon_moyen"),
+    water_stats = df.groupBy("Water_Presence").agg(
+        avg("Temperature").alias("temperature_moyenne"),
+        avg("Gravity").alias("gravite_moyenne"),
+        avg("Minerals").alias("mineraux_moyenne"),
+        avg("Sunlight_Hours").alias("soleil_moyen"),
+        avg("Num_Moons").alias("lunes_moyenne"),
         count("*").alias("nombre_planetes"),
     )
 
     print("📈 Statistiques moyennes par présence d'eau:")
     water_stats.show()
 
-    # Zone habitable (température entre -50 et 50°C)
-    habitable_zone = df.filter(
-        (col("temperature_moyenne") >= -50) & (col("temperature_moyenne") <= 50)
+    # Relation eau-température
+    print("\n🌡️ Relation Eau-Température:")
+    water_temp_relation = df.groupBy("Water_Presence").agg(
+        avg("Temperature").alias("temp_moyenne"),
+        min("Temperature").alias("temp_min"),
+        max("Temperature").alias("temp_max"),
+        stddev("Temperature").alias("temp_stddev"),
     )
+    water_temp_relation.show()
+
+    # Zone habitable (température entre -50 et 50°C)
+    habitable_zone = df.filter((col("Temperature") >= -50) & (col("Temperature") <= 50))
 
     print(f"\n🌡️ Planètes dans la zone de température habitable (-50°C à 50°C):")
     print(f"Total: {habitable_zone.count()}/{df.count()}")
 
     habitable_zone.select(
-        "nom", "temperature_moyenne", "presence_eau", "distance", "type"
+        "Name", "Temperature", "Water_Presence", "Gravity", "Minerals"
     ).show()
+
+    # Analyse de la relation eau-minéraux
+    print("\n⛏️ Relation Eau-Minéraux:")
+    water_mineral_relation = df.groupBy("Water_Presence").agg(
+        avg("Minerals").alias("mineraux_moyenne"),
+        min("Minerals").alias("mineraux_min"),
+        max("Minerals").alias("mineraux_max"),
+    )
+    water_mineral_relation.show()
 
     return water_stats
 
@@ -343,11 +427,12 @@ def perform_clustering(df):
 
     # Préparation des features pour le clustering
     feature_cols = [
-        "masse",
-        "rayon",
-        "distance",
-        "temperature_moyenne",
-        "periode_orbitale",
+        "Minerals",
+        "Gravity",
+        "Sunlight_Hours",
+        "Temperature",
+        "Rotation_Time",
+        "Num_Moons",
     ]
 
     # Assemblage des features
@@ -398,10 +483,12 @@ def perform_clustering(df):
         clustered_df.groupBy("cluster")
         .agg(
             count("*").alias("nombre_planetes"),
-            avg("masse").alias("masse_moyenne"),
-            avg("rayon").alias("rayon_moyen"),
-            avg("distance").alias("distance_moyenne"),
-            avg("temperature_moyenne").alias("temp_moyenne"),
+            avg("Minerals").alias("mineraux_moyenne"),
+            avg("Gravity").alias("gravite_moyenne"),
+            avg("Temperature").alias("temperature_moyenne"),
+            avg("Sunlight_Hours").alias("soleil_moyen"),
+            avg("Water_Presence").alias("eau_moyenne"),
+            avg("Colonisable").alias("colonisable_moyenne"),
         )
         .orderBy("cluster")
     )
@@ -412,7 +499,12 @@ def perform_clustering(df):
     for cluster_id in range(best_k):
         print(f"\n🌌 Cluster {cluster_id}:")
         cluster_planets = clustered_df.filter(col("cluster") == cluster_id).select(
-            "nom", "type", "masse", "rayon", "distance", "temperature_moyenne"
+            "Name",
+            "Minerals",
+            "Gravity",
+            "Temperature",
+            "Water_Presence",
+            "Colonisable",
         )
         cluster_planets.show()
 
@@ -428,11 +520,11 @@ def identify_anomalies(df):
 
     # Calcul des quartiles et IQR pour chaque variable numérique
     numeric_cols = [
-        "masse",
-        "rayon",
-        "distance",
-        "temperature_moyenne",
-        "periode_orbitale",
+        "Minerals",
+        "Gravity",
+        "Temperature",
+        "Sunlight_Hours",
+        "Rotation_Time",
     ]
 
     anomalies = []
@@ -440,29 +532,76 @@ def identify_anomalies(df):
     for col_name in numeric_cols:
         # Calcul des quartiles
         quantiles = df.approxQuantile(col_name, [0.25, 0.5, 0.75], 0.05)
-        q1, median, q3 = quantiles
-        iqr = q3 - q1
+        if len(quantiles) == 3:
+            q1, median, q3 = quantiles
+            iqr = q3 - q1
 
-        # Seuils d'anomalie
-        lower_bound = q1 - 1.5 * iqr
-        upper_bound = q3 + 1.5 * iqr
+            # Seuils d'anomalie
+            lower_bound = q1 - 1.5 * iqr
+            upper_bound = q3 + 1.5 * iqr
 
-        print(f"\n📏 {col_name}:")
-        print(f"  Q1: {q1:.2f}, Médiane: {median:.2f}, Q3: {q3:.2f}")
-        print(f"  Seuils d'anomalie: [{lower_bound:.2f}, {upper_bound:.2f}]")
+            print(f"\n📏 {col_name}:")
+            print(f"  Q1: {q1:.2f}, Médiane: {median:.2f}, Q3: {q3:.2f}")
+            print(f"  Seuils d'anomalie: [{lower_bound:.2f}, {upper_bound:.2f}]")
 
-        # Identification des anomalies
-        col_anomalies = df.filter(
-            (col(col_name) < lower_bound) | (col(col_name) > upper_bound)
-        ).select("nom", col_name, "type")
+            # Identification des anomalies
+            col_anomalies = df.filter(
+                (col(col_name) < lower_bound) | (col(col_name) > upper_bound)
+            ).select("Name", col_name, "Water_Presence", "Colonisable")
 
-        anomaly_count = col_anomalies.count()
-        if anomaly_count > 0:
-            print(f"  🔍 {anomaly_count} anomalie(s) détectée(s):")
-            col_anomalies.show()
-            anomalies.extend(col_anomalies.collect())
+            anomaly_count = col_anomalies.count()
+            if anomaly_count > 0:
+                print(f"  🔍 {anomaly_count} anomalie(s) détectée(s):")
+                col_anomalies.show()
+                anomalies.extend(col_anomalies.collect())
 
     return anomalies
+
+
+def analyze_habitability_factors(df):
+    """
+    Analyse les facteurs d'habitabilité
+    """
+    print("\n🏠 ANALYSE DES FACTEURS D'HABITABILITÉ")
+    print("=" * 50)
+
+    # Analyse des planètes colonisables
+    colonizable_planets = df.filter(col("Colonisable") == 1)
+    non_colonizable_planets = df.filter(col("Colonisable") == 0)
+
+    print(f"🌍 Planètes colonisables: {colonizable_planets.count()}")
+    print(f"🚫 Planètes non colonisables: {non_colonizable_planets.count()}")
+
+    # Caractéristiques moyennes des planètes colonisables
+    print("\n📊 Caractéristiques moyennes des planètes colonisables:")
+    colonizable_stats = colonizable_planets.agg(
+        avg("Temperature").alias("temp_moyenne"),
+        avg("Gravity").alias("gravite_moyenne"),
+        avg("Minerals").alias("mineraux_moyenne"),
+        avg("Sunlight_Hours").alias("soleil_moyen"),
+        avg("Water_Presence").alias("eau_moyenne"),
+        avg("Num_Moons").alias("lunes_moyenne"),
+    )
+    colonizable_stats.show()
+
+    # Caractéristiques moyennes des planètes non colonisables
+    print("\n📊 Caractéristiques moyennes des planètes NON colonisables:")
+    non_colonizable_stats = non_colonizable_planets.agg(
+        avg("Temperature").alias("temp_moyenne"),
+        avg("Gravity").alias("gravite_moyenne"),
+        avg("Minerals").alias("mineraux_moyenne"),
+        avg("Sunlight_Hours").alias("soleil_moyen"),
+        avg("Water_Presence").alias("eau_moyenne"),
+        avg("Num_Moons").alias("lunes_moyenne"),
+    )
+    non_colonizable_stats.show()
+
+    # Analyse croisée eau-colonisabilité
+    print("\n💧🏠 Relation Eau-Colonisabilité:")
+    water_colonizable_crosstab = df.crosstab("Water_Presence", "Colonisable")
+    water_colonizable_crosstab.show()
+
+    return colonizable_stats, non_colonizable_stats
 
 
 def save_results_to_hdfs(df, analytics_results, hdfs_namenode):
@@ -483,8 +622,30 @@ def save_results_to_hdfs(df, analytics_results, hdfs_namenode):
 
         # Conversion des résultats en DataFrame et sauvegarde
         spark = SparkSession.getActiveSession()
-        results_df = spark.createDataFrame([analytics_results], ["analysis_results"])
-        results_df.write.mode("overwrite").json(results_path)
+        results_data = [
+            (
+                analytics_results["total_planets"],
+                analytics_results["water_bearing_planets"],
+                analytics_results["colonizable_planets"],
+                analytics_results["correlation_analysis"],
+                analytics_results["clustering_completed"],
+                analytics_results["anomalies_detected"],
+            )
+        ]
+
+        results_schema = StructType(
+            [
+                StructField("total_planets", IntegerType(), True),
+                StructField("water_bearing_planets", IntegerType(), True),
+                StructField("colonizable_planets", IntegerType(), True),
+                StructField("correlation_analysis", StringType(), True),
+                StructField("clustering_completed", BooleanType(), True),
+                StructField("anomalies_detected", IntegerType(), True),
+            ]
+        )
+
+        results_df = spark.createDataFrame(results_data, results_schema)
+        results_df.write.mode("overwrite").parquet(results_path)
         print(f"✅ Résultats d'analyse sauvegardés: {results_path}")
 
     except Exception as e:
@@ -505,17 +666,15 @@ def save_to_hive(df, clustered_df):
 
         # Table des données avec clusters
         clustered_df.select(
-            "id",
-            "nom",
-            "decouvreur",
-            "masse",
-            "rayon",
-            "distance",
-            "temperature_moyenne",
-            "periode_orbitale",
-            "type",
-            "statut",
-            "presence_eau",
+            "Name",
+            "Num_Moons",
+            "Minerals",
+            "Gravity",
+            "Sunlight_Hours",
+            "Temperature",
+            "Rotation_Time",
+            "Water_Presence",
+            "Colonisable",
             "cluster",
         ).write.mode("overwrite").saveAsTable("planet_discoveries.clustered_data")
         print("✅ Table 'planet_discoveries.clustered_data' créée")
@@ -555,22 +714,26 @@ def main():
         # 3. Analyse spécifique de la présence d'eau
         water_stats = analyze_water_relationships(df)
 
-        # 4. Clustering des planètes
+        # 4. Analyse des facteurs d'habitabilité
+        colonizable_stats, non_colonizable_stats = analyze_habitability_factors(df)
+
+        # 5. Clustering des planètes
         clustered_df, cluster_model = perform_clustering(df)
 
-        # 5. Détection d'anomalies
+        # 6. Détection d'anomalies
         anomalies = identify_anomalies(df)
 
-        # 6. Compilation des résultats
+        # 7. Compilation des résultats
         analytics_results = {
             "total_planets": df.count(),
             "correlation_analysis": "completed",
             "clustering_completed": True,
             "anomalies_detected": len(anomalies),
-            "water_bearing_planets": df.filter(col("presence_eau") == "oui").count(),
+            "water_bearing_planets": df.filter(col("Water_Presence") == 1).count(),
+            "colonizable_planets": df.filter(col("Colonisable") == 1).count(),
         }
 
-        # 7. Sauvegarde des résultats
+        # 8. Sauvegarde des résultats
         save_results_to_hdfs(df, analytics_results, hdfs_namenode)
         save_to_hive(df, clustered_df)
 
@@ -579,6 +742,13 @@ def main():
         print(
             "🗄️ Tables Hive créées: planet_discoveries.raw_data, planet_discoveries.clustered_data"
         )
+
+        # Résumé des découvertes
+        print(f"\n🌍 RÉSUMÉ DES DÉCOUVERTES:")
+        print(f"  • Total de planètes analysées: {analytics_results['total_planets']}")
+        print(f"  • Planètes avec eau: {analytics_results['water_bearing_planets']}")
+        print(f"  • Planètes colonisables: {analytics_results['colonizable_planets']}")
+        print(f"  • Anomalies détectées: {analytics_results['anomalies_detected']}")
 
     except Exception as e:
         print(f"❌ Erreur lors de l'analyse: {e}")

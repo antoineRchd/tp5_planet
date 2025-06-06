@@ -187,12 +187,13 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - HDFS_NAMENODE=hdfs://namenode:9000
       - HIVE_METASTORE=thrift://hive-metastore:9083
+      - SPARK_MODE=consumer # Modes: consumer, analytics, ml, pipeline, interactive
     volumes:
       - ./spark:/app
       - ./planets_dataset.csv:/app/planets_dataset.csv
     env_file:
       - ./hadoop.env
-    command: tail -f /dev/null
+    restart: unless-stopped
 
 volumes:
   hadoop_namenode:
