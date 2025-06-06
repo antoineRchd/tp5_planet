@@ -26,19 +26,19 @@ def create_spark_session():
 
 def define_planet_schema():
     """
-    Définit le schéma pour les données de planètes (structure CSV)
+    Définit le schéma pour les données de planètes (structure JSON API)
     """
     return StructType(
         [
-            StructField("name", StringType(), True),
-            StructField("num_moons", IntegerType(), True),
-            StructField("minerals", IntegerType(), True),
-            StructField("gravity", DoubleType(), True),
-            StructField("sunlight_hours", DoubleType(), True),
-            StructField("temperature", DoubleType(), True),
-            StructField("rotation_time", DoubleType(), True),
-            StructField("water_presence", IntegerType(), True),
-            StructField("colonisable", IntegerType(), True),
+            StructField("Name", StringType(), True),
+            StructField("Num_Moons", IntegerType(), True),
+            StructField("Minerals", IntegerType(), True),
+            StructField("Gravity", DoubleType(), True),
+            StructField("Sunlight_Hours", DoubleType(), True),
+            StructField("Temperature", DoubleType(), True),
+            StructField("Rotation_Time", DoubleType(), True),
+            StructField("Water_Presence", IntegerType(), True),
+            StructField("Colonisable", IntegerType(), True),
             StructField("timestamp_reception", StringType(), True),
             StructField(
                 "source", StringType(), True
@@ -81,14 +81,14 @@ def calculate_basic_stats(df):
     # Agrégations simples
     stats_df = df.agg(
         count("*").alias("total_planetes"),
-        avg("gravity").alias("gravite_moyenne"),
-        avg("temperature").alias("temperature_moyenne"),
-        avg("sunlight_hours").alias("heures_soleil_moyenne"),
-        avg("rotation_time").alias("rotation_moyenne"),
-        avg("num_moons").alias("lunes_moyenne"),
-        sum("minerals").alias("mineraux_total"),
-        min("temperature").alias("temp_min"),
-        max("temperature").alias("temp_max"),
+        avg("Gravity").alias("gravite_moyenne"),
+        avg("Temperature").alias("temperature_moyenne"),
+        avg("Sunlight_Hours").alias("heures_soleil_moyenne"),
+        avg("Rotation_Time").alias("rotation_moyenne"),
+        avg("Num_Moons").alias("lunes_moyenne"),
+        sum("Minerals").alias("mineraux_total"),
+        min("Temperature").alias("temp_min"),
+        max("Temperature").alias("temp_max"),
     )
 
     print("Statistiques générales:")
@@ -97,10 +97,10 @@ def calculate_basic_stats(df):
     # Distribution par présence d'eau
     print("\nDistribution par présence d'eau:")
     water_dist = (
-        df.groupBy("water_presence")
+        df.groupBy("Water_Presence")
         .count()
         .withColumn(
-            "presence_eau", when(col("water_presence") == 1, "Oui").otherwise("Non")
+            "presence_eau", when(col("Water_Presence") == 1, "Oui").otherwise("Non")
         )
         .select("presence_eau", "count")
         .orderBy(desc("count"))
@@ -110,10 +110,10 @@ def calculate_basic_stats(df):
     # Distribution par colonisabilité
     print("\nDistribution par colonisabilité:")
     colonisable_dist = (
-        df.groupBy("colonisable")
+        df.groupBy("Colonisable")
         .count()
         .withColumn(
-            "colonisable_label", when(col("colonisable") == 1, "Oui").otherwise("Non")
+            "colonisable_label", when(col("Colonisable") == 1, "Oui").otherwise("Non")
         )
         .select("colonisable_label", "count")
         .orderBy(desc("count"))
@@ -134,13 +134,13 @@ def analyze_habitability_conditions(df):
     habitable_conditions = df.withColumn(
         "conditions_habitables",
         when(
-            (col("temperature") >= -50)
-            & (col("temperature") <= 50)
-            & (col("gravity") >= 0.5)
-            & (col("gravity") <= 2.0)
-            & (col("water_presence") == 1)
-            & (col("sunlight_hours") >= 8)
-            & (col("sunlight_hours") <= 16),
+            (col("Temperature") >= -50)
+            & (col("Temperature") <= 50)
+            & (col("Gravity") >= 0.5)
+            & (col("Gravity") <= 2.0)
+            & (col("Water_Presence") == 1)
+            & (col("Sunlight_Hours") >= 8)
+            & (col("Sunlight_Hours") <= 16),
             "Potentiellement habitable",
         ).otherwise("Non habitable"),
     )
@@ -163,12 +163,12 @@ def analyze_habitability_conditions(df):
 
     print("\nPlanètes potentiellement habitables:")
     potentially_habitable.select(
-        "name",
-        "gravity",
-        "temperature",
-        "sunlight_hours",
-        "water_presence",
-        "num_moons",
+        "Name",
+        "Gravity",
+        "Temperature",
+        "Sunlight_Hours",
+        "Water_Presence",
+        "Num_Moons",
     ).show()
 
     return habitable_conditions
@@ -186,23 +186,23 @@ def analyze_colonisation_potential(df):
         "score_colonisation",
         (
             # Température favorable (0-40°C)
-            when((col("temperature") >= 0) & (col("temperature") <= 40), 20).otherwise(
+            when((col("Temperature") >= 0) & (col("Temperature") <= 40), 20).otherwise(
                 0
             )
             +
             # Gravité proche de la Terre (0.8-1.2)
-            when((col("gravity") >= 0.8) & (col("gravity") <= 1.2), 25).otherwise(0)
+            when((col("Gravity") >= 0.8) & (col("Gravity") <= 1.2), 25).otherwise(0)
             +
             # Présence d'eau
-            when(col("water_presence") == 1, 30).otherwise(0)
+            when(col("Water_Presence") == 1, 30).otherwise(0)
             +
             # Heures de soleil adéquates (10-14h)
             when(
-                (col("sunlight_hours") >= 10) & (col("sunlight_hours") <= 14), 15
+                (col("Sunlight_Hours") >= 10) & (col("Sunlight_Hours") <= 14), 15
             ).otherwise(0)
             +
             # Ressources minérales abondantes (>500)
-            when(col("minerals") > 500, 10).otherwise(5)
+            when(col("Minerals") > 500, 10).otherwise(5)
         ),
     ).withColumn(
         "potentiel_colonisation",
@@ -230,13 +230,13 @@ def analyze_colonisation_potential(df):
 
     print("\nTop 10 des planètes pour la colonisation:")
     top_colonisation.select(
-        "name",
+        "Name",
         "score_colonisation",
         "potentiel_colonisation",
-        "temperature",
-        "gravity",
-        "water_presence",
-        "minerals",
+        "Temperature",
+        "Gravity",
+        "Water_Presence",
+        "Minerals",
     ).show()
 
     return colonisation_score
@@ -251,11 +251,11 @@ def detect_outliers(df):
 
     # Calcul des quartiles pour différentes variables
     variables = [
-        "gravity",
-        "temperature",
-        "sunlight_hours",
-        "rotation_time",
-        "minerals",
+        "Gravity",
+        "Temperature",
+        "Sunlight_Hours",
+        "Rotation_Time",
+        "Minerals",
     ]
 
     for var in variables:
@@ -282,7 +282,7 @@ def detect_outliers(df):
                         var, outlier_count
                     )
                 )
-                outliers.select("name", var).show(5)
+                outliers.select("Name", var).show(5)
             else:
                 print("  Aucune anomalie détectée pour {}".format(var))
 
