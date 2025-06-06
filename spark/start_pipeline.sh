@@ -22,7 +22,7 @@ echo "⏳ Initialisation (30s)..."
 sleep 30
 
 # Vérifier tous les services
-wait_for_service kafka 29092 "Kafka"
+wait_for_service kafka 9092 "Kafka"
 wait_for_service spark-master 7077 "Spark Master" 
 wait_for_service namenode 9000 "HDFS"
 

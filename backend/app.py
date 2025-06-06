@@ -58,7 +58,6 @@ def create_discovery():
             "Rotation_Time": planet.Rotation_Time,
             "Water_Presence": planet.Water_Presence,
             "Colonisable": planet.Colonisable,
-            "timestamp_reception": planet.timestamp_reception,
         }
 
 
@@ -148,7 +147,6 @@ def load_dataset():
                         "Rotation_Time": planet.Rotation_Time,
                         "Water_Presence": planet.Water_Presence,
                         "Colonisable": planet.Colonisable,
-                        "timestamp_reception": planet.timestamp_reception,
                         "source": "dataset",
                     }
 

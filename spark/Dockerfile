@@ -1,26 +1,21 @@
-FROM bde2020/spark-base:3.3.0-hadoop3.3
+FROM bitnami/spark:3.3.2
 
-# Installation des dépendances Python
 USER root
 
-# Installation de netcat et des bibliothèques Python
-RUN apk add --no-cache netcat-openbsd
-COPY requirements.txt /tmp/
-RUN pip3 install -r /tmp/requirements.txt
+# Installer Python 3 + pip
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    pip3 install --upgrade pip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
+# Copier les dépendances
+COPY requirements.txt /app/requirements.txt
+RUN pip3 install -r /app/requirements.txt
+
+# Copier les fichiers de ton app
+COPY . /app
 WORKDIR /app
 
-# Copie des applications Spark
-COPY . /app/
-
-# Rendre les scripts de démarrage exécutables et ajuster les permissions
-RUN chmod +x /app/start_kafka_consumer.sh /app/start_pipeline.sh && \
-    chown -R root:root /app/ && \
-    chmod -R 755 /app/
-
-# Variables d'environnement
-ENV SPARK_APPLICATION_PYTHON_LOCATION /app
-ENV PYTHONPATH="${PYTHONPATH}:/app"
-ENV SPARK_MODE=consumer
-
-CMD ["/bin/bash", "/app/start_pipeline.sh"] 
+# Lancer ton script principal Spark
+CMD ["spark-submit", "--master", "spark://spark-master:7077", "main.py"]

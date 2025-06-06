@@ -24,12 +24,8 @@ class PlanetDiscovery(BaseModel):
     Water_Presence: int = Field(
         ..., ge=0, le=1, description="Présence d'eau (0=non, 1=oui)"
     )
-    Colonisable: int = Field(
-        ..., ge=0, le=1, description="Planète colonisable (0=non, 1=oui)"
-    )
-
-    timestamp_reception: Optional[str] = Field(
-        default=None, description="Timestamp de réception"
+    Colonisable: Optional[int] = Field(
+        0, ge=0, le=1, description="Planète colonisable (0=non, 1=oui)"
     )
 
     @validator("Name")
@@ -51,12 +47,6 @@ class PlanetDiscovery(BaseModel):
         if v not in [0, 1]:
             raise ValueError("Colonisable doit être 0 (non) ou 1 (oui)")
         return v
-
-    def model_post_init(self, __context):
-        """Définit automatiquement le timestamp si non fourni"""
-        if self.timestamp_reception is None:
-            self.timestamp_reception = datetime.now().isoformat()
-
 
 class PlanetDiscoveryResponse(BaseModel):
     """Modèle de réponse pour les découvertes de planètes"""
