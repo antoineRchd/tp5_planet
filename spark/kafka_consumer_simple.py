@@ -289,6 +289,117 @@ def detect_outliers(df):
     return df
 
 
+def save_to_hdfs(spark, raw_data, analysis_results):
+    """
+    Sauvegarde tous les résultats dans HDFS
+    """
+    print("\n💾 SAUVEGARDE DANS HDFS")
+    print("=" * 50)
+
+    from datetime import datetime
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    try:
+        # 1. Sauvegarder les données brutes parsées
+        raw_path = "hdfs://namenode:9000/planet_analytics/raw_data/planets_{}".format(
+            timestamp
+        )
+        raw_data.write.mode("overwrite").parquet(raw_path)
+        print("✅ Données brutes sauvegardées: {}".format(raw_path))
+
+        # 2. Sauvegarder les statistiques de base
+        stats_df = raw_data.agg(
+            count("*").alias("total_planetes"),
+            avg("Gravity").alias("gravite_moyenne"),
+            avg("Temperature").alias("temperature_moyenne"),
+            avg("Sunlight_Hours").alias("heures_soleil_moyenne"),
+            avg("Rotation_Time").alias("rotation_moyenne"),
+            avg("Num_Moons").alias("lunes_moyenne"),
+            sum("Minerals").alias("mineraux_total"),
+            min("Temperature").alias("temp_min"),
+            max("Temperature").alias("temp_max"),
+        )
+
+        stats_path = (
+            "hdfs://namenode:9000/planet_analytics/stats/basic_stats_{}".format(
+                timestamp
+            )
+        )
+        stats_df.write.mode("overwrite").parquet(stats_path)
+        print("✅ Statistiques de base sauvegardées: {}".format(stats_path))
+
+        # 3. Sauvegarder l'analyse d'habitabilité
+        habitability_df = raw_data.withColumn(
+            "conditions_habitables",
+            when(
+                (col("Temperature") >= -50)
+                & (col("Temperature") <= 50)
+                & (col("Gravity") >= 0.5)
+                & (col("Gravity") <= 2.0)
+                & (col("Water_Presence") == 1)
+                & (col("Sunlight_Hours") >= 8)
+                & (col("Sunlight_Hours") <= 16),
+                "Potentiellement habitable",
+            ).otherwise("Non habitable"),
+        )
+
+        habitability_path = (
+            "hdfs://namenode:9000/planet_analytics/results/habitability_{}".format(
+                timestamp
+            )
+        )
+        habitability_df.write.mode("overwrite").parquet(habitability_path)
+        print("✅ Analyse d'habitabilité sauvegardée: {}".format(habitability_path))
+
+        # 4. Sauvegarder l'analyse de colonisation avec scores
+        colonisation_df = analysis_results
+        colonisation_path = (
+            "hdfs://namenode:9000/planet_analytics/results/colonisation_{}".format(
+                timestamp
+            )
+        )
+        colonisation_df.write.mode("overwrite").parquet(colonisation_path)
+        print("✅ Analyse de colonisation sauvegardée: {}".format(colonisation_path))
+
+        # 5. Sauvegarder le top 10 des planètes
+        top10_df = colonisation_df.orderBy(desc("score_colonisation")).limit(10)
+        top10_path = "hdfs://namenode:9000/planet_analytics/results/top10_colonisation_{}".format(
+            timestamp
+        )
+        top10_df.write.mode("overwrite").parquet(top10_path)
+        print("✅ Top 10 de colonisation sauvegardé: {}".format(top10_path))
+
+        # 6. Créer un fichier de métadonnées
+        metadata = spark.createDataFrame(
+            [
+                (
+                    timestamp,
+                    raw_data.count(),
+                    "planets_analysis",
+                    "Analyse complète des découvertes de planètes",
+                )
+            ],
+            ["timestamp", "nb_planetes", "type_analyse", "description"],
+        )
+
+        metadata_path = "hdfs://namenode:9000/planet_analytics/metadata_{}".format(
+            timestamp
+        )
+        metadata.write.mode("overwrite").parquet(metadata_path)
+        print("✅ Métadonnées sauvegardées: {}".format(metadata_path))
+
+        print("\n🎉 TOUTES LES DONNÉES SAUVEGARDÉES AVEC SUCCÈS DANS HDFS!")
+        return True
+
+    except Exception as e:
+        print("❌ Erreur lors de la sauvegarde HDFS: {}".format(e))
+        import traceback
+
+        traceback.print_exc()
+        return False
+
+
 def main():
     """
     Fonction principale de traitement des données
@@ -331,17 +442,12 @@ def main():
             if parsed_batch.count() > 0:
                 # Analyses sur les données existantes
                 calculate_basic_stats(parsed_batch)
-                analyze_habitability_conditions(parsed_batch)
-                analyze_colonisation_potential(parsed_batch)
+                habitability_results = analyze_habitability_conditions(parsed_batch)
+                colonisation_results = analyze_colonisation_potential(parsed_batch)
                 detect_outliers(parsed_batch)
 
-                # Sauvegarde des résultats (si possible)
-                try:
-                    output_path = "/tmp/planet_analysis_results"
-                    parsed_batch.write.mode("overwrite").json(output_path)
-                    print("\n💾 Résultats sauvegardés: {}".format(output_path))
-                except Exception as e:
-                    print("⚠️ Impossible de sauvegarder: {}".format(e))
+                # Sauvegarde complète dans HDFS
+                save_to_hdfs(spark, parsed_batch, colonisation_results)
 
         else:
             print("\n⚠️ Aucune donnée trouvée dans Kafka")
